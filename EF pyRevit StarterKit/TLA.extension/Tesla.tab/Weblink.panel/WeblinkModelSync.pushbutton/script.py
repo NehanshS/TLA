@@ -1,43 +1,32 @@
-from pyrevit import forms, script
+import os
+import tempfile
+from pyrevit import script, forms
 from Autodesk.Revit.DB import *
-import clr, os, datetime
+from Autodesk.Revit.UI import *
 
-# === Step 1: Export default 3D view as IFC ===
+# -- SETTINGS --
+SPECKLE_PUSH_SCRIPT = r"C:\Path\To\your_speckle_push.py"  # Update this!
+WEBAPP_URL = "https://yourwebapp.com/speckleviewer?stream=<STREAM_ID>"
+
+# 1. Find default 3D view (or fallback)
 doc = __revit__.ActiveUIDocument.Document
-view_3d = None
+views = FilteredElementCollector(doc).OfClass(View3D).ToElements()
+active_3d = next((v for v in views if not v.IsTemplate and v.Name == "{3D}"), None) or \
+            next((v for v in views if not v.IsTemplate), None)
+if not active_3d:
+    forms.alert("No 3D view found.", exitscript=True)
 
-collector = FilteredElementCollector(doc).OfClass(View3D)
-for v in collector:
-    if not v.IsTemplate and v.Name == "{3D}":
-        view_3d = v
-        break
-
-if not view_3d:
-    forms.alert("Default 3D view '{3D}' not found!")
-    script.exit()
-
-# Choose a temp export path
-export_dir = os.path.expanduser("~\\Documents\\IFC_Exports")
-if not os.path.exists(export_dir):
-    os.makedirs(export_dir)
-timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-export_path = os.path.join(export_dir, "model_{}.ifc".format(timestamp))
-
-# Set up IFC export options
+# 2. Export 3D View (use .ifc for wide compatibility, but could use .obj/.fbx as needed)
+tempdir = tempfile.gettempdir()
+export_path = os.path.join(tempdir, "export_3D.ifc")
 ifc_options = IFCExportOptions()
-# (You can tweak options if you want—let me know if you want detailed config)
+doc.Export(tempdir, "export_3D", ifc_options)
 
-# Export!
-result = doc.Export(export_dir, os.path.basename(export_path), view_3d.Id, ifc_options)
+# 3. Call external script to push to Speckle
+python_exe = r"C:\Path\To\python.exe"  # Update for your system!
+os.system(f'"{python_exe}" "{SPECKLE_PUSH_SCRIPT}" "{export_path}"')
 
-if not result:
-    forms.alert("IFC Export failed!")
-    script.exit()
+# 4. Open your webapp in browser
+os.startfile(WEBAPP_URL)
 
-# === Step 2: Trigger external Python script ===
-python_exe = r"C:\Path\To\python.exe"  # <-- CHANGE THIS TO YOUR PYTHON 3 PATH
-external_script = r"C:\Path\To\push_ifc_to_speckle.py"  # <-- CHANGE THIS TO YOUR SCRIPT
-cmd = '"{}" "{}" "{}"'.format(python_exe, external_script, export_path)
-os.system(cmd)
-
-forms.alert("IFC exported and external push started!", exitscript=True)
+forms.alert("Model exported, pushed, and web app opened!", exitscript=True)
