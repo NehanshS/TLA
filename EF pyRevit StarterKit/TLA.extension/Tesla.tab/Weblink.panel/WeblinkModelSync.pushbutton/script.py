@@ -1,66 +1,43 @@
-from pyrevit import script, forms
+from pyrevit import forms, script
 from Autodesk.Revit.DB import *
-from Autodesk.Revit.UI import *
-import clr, sys, os
+import clr, os, datetime
 
-# Add path to specklepy if needed (optional, only if Revit Python can't find it)
-# sys.path.append(r"C:\path\to\specklepy")
-
-try:
-    from specklepy.api.client import SpeckleClient
-    from specklepy.api.credentials import get_local_account
-    from specklepy.objects import Base
-    from specklepy.transports.server import ServerTransport
-except ImportError:
-    forms.alert("Specklepy not installed! Please run 'pip install specklepy' in your Python environment.")
-    raise
-
-# ==== USER EDITS: Set these ====
-SPECKLE_SERVER_URL = "https://app.speckle.systems"
-SPECKLE_STREAM_ID = "35ec9c1d80"
-SPECKLE_TOKEN = "2870a8f9381058cfe8d6519065d7245398883c941f"  # Best to keep this in env vars or a config, not in the script
-
-# ==== Main Function ====
-output = script.get_output()
-output.print_md("## Sync Cloud: Push Model to Speckle")
-
+# === Step 1: Export default 3D view as IFC ===
 doc = __revit__.ActiveUIDocument.Document
+view_3d = None
 
-# Collect all model elements (can filter as needed)
-collector = FilteredElementCollector(doc).WhereElementIsNotElementType().ToElements()
+collector = FilteredElementCollector(doc).OfClass(View3D)
+for v in collector:
+    if not v.IsTemplate and v.Name == "{3D}":
+        view_3d = v
+        break
 
-# Simple conversion: collect element ids (for demo; in practice use converter or serialize geometry/params)
-elements_data = []
-for elem in collector:
-    try:
-        # For demonstration, we'll just get element id and name
-        elem_data = {
-            "id": str(elem.Id),
-            "category": elem.Category.Name if elem.Category else "None",
-            "name": elem.Name
-        }
-        elements_data.append(elem_data)
-    except Exception as ex:
-        pass
+if not view_3d:
+    forms.alert("Default 3D view '{3D}' not found!")
+    script.exit()
 
-# Build a Speckle Base object
-speckle_obj = Base()
-speckle_obj["elements"] = elements_data
-speckle_obj["revit_model"] = doc.Title
+# Choose a temp export path
+export_dir = os.path.expanduser("~\\Documents\\IFC_Exports")
+if not os.path.exists(export_dir):
+    os.makedirs(export_dir)
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+export_path = os.path.join(export_dir, "model_{}.ifc".format(timestamp))
 
-# Set up the Speckle client and transport
-client = SpeckleClient(host=SPECKLE_SERVER_URL, use_ssl=True)
-client.authenticate_with_token(SPECKLE_TOKEN)
-transport = ServerTransport(client=client, stream_id=SPECKLE_STREAM_ID)
+# Set up IFC export options
+ifc_options = IFCExportOptions()
+# (You can tweak options if you want—let me know if you want detailed config)
 
-# Send to Speckle (this creates a new commit)
-commit_id = client.commit.create(
-    stream_id=SPECKLE_STREAM_ID,
-    object=speckle_obj,
-    branch_name="main",
-    message="Automated push from pyRevit"
-)
+# Export!
+result = doc.Export(export_dir, os.path.basename(export_path), view_3d.Id, ifc_options)
 
-output.print_md("### Model pushed to Speckle!\n**Commit ID:** `{}`".format(commit_id))
-forms.alert("Model data pushed to Speckle successfully!", exitscript=True)
+if not result:
+    forms.alert("IFC Export failed!")
+    script.exit()
 
+# === Step 2: Trigger external Python script ===
+python_exe = r"C:\Path\To\python.exe"  # <-- CHANGE THIS TO YOUR PYTHON 3 PATH
+external_script = r"C:\Path\To\push_ifc_to_speckle.py"  # <-- CHANGE THIS TO YOUR SCRIPT
+cmd = '"{}" "{}" "{}"'.format(python_exe, external_script, export_path)
+os.system(cmd)
+
+forms.alert("IFC exported and external push started!", exitscript=True)
