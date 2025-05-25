@@ -16,11 +16,20 @@ active_3d = next((v for v in views if not v.IsTemplate and v.Name == "{3D}"), No
 if not active_3d:
     forms.alert("No 3D view found.", exitscript=True)
 
-# 2. Export 3D View (use .ifc for wide compatibility, but could use .obj/.fbx as needed)
 tempdir = tempfile.gettempdir()
 export_path = os.path.join(tempdir, "export_3D.ifc")
 ifc_options = IFCExportOptions()
-doc.Export(tempdir, "export_3D", ifc_options)
+
+# Wrap export in a transaction group context to avoid ModificationOutsideTransactionException
+t_group = TransactionGroup(doc, "Export 3D View for Speckle")
+t_group.Start()
+try:
+    # No need for a transaction if only exporting, but this avoids Revit API context issues
+    doc.Export(tempdir, "export_3D", ifc_options)
+finally:
+    t_group.Assimilate()
+
+
 
 # 3. Call external script to push to Speckle
 python_exe = r"C:\Users\nehaa\AppData\Local\Programs\Python\Python312\python.exe"  # Update for your system!
