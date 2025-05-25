@@ -24,7 +24,8 @@ doc.Export(tempdir, "export_3D", ifc_options)
 
 # 3. Call external script to push to Speckle
 python_exe = r"C:\Users\nehaa\AppData\Local\Programs\Python\Python312\python.exe"  # Update for your system!
-os.system(f'"{python_exe}" "{SPECKLE_PUSH_SCRIPT}" "{export_path}"')
+os.system('"{0}" "{1}" "{2}"'.format(python_exe, SPECKLE_PUSH_SCRIPT, export_path))
+
 
 # 4. Open your webapp in browser
 os.startfile(WEBAPP_URL)
