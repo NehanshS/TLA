@@ -1,66 +1,27 @@
-from pyrevit import script, forms
-from Autodesk.Revit.DB import *
-from Autodesk.Revit.UI import *
-import clr, sys, os
+import sys
+from specklepy.api.client import SpeckleClient
+from specklepy.objects import Base
+from specklepy.transports.server import ServerTransport
 
-# Add path to specklepy if needed (optional, only if Revit Python can't find it)
-# sys.path.append(r"C:\path\to\specklepy")
-
-try:
-    from specklepy.api.client import SpeckleClient
-    from specklepy.api.credentials import get_local_account
-    from specklepy.objects import Base
-    from specklepy.transports.server import ServerTransport
-except ImportError:
-    forms.alert("Specklepy not installed! Please run 'pip install specklepy' in your Python environment.")
-    raise
-
-# ==== USER EDITS: Set these ====
+# CLI usage: python your_speckle_push.py path/to/export_3D.ifc
+export_file = sys.argv[1]
 SPECKLE_SERVER_URL = "https://app.speckle.systems"
 SPECKLE_STREAM_ID = "<YOUR_STREAM_ID>"
-SPECKLE_TOKEN = "<YOUR_SPECKLE_TOKEN>"  # Best to keep this in env vars or a config, not in the script
+SPECKLE_TOKEN = "<YOUR_TOKEN>"
 
-# ==== Main Function ====
-output = script.get_output()
-output.print_md("## Sync Cloud: Push Model to Speckle")
-
-doc = __revit__.ActiveUIDocument.Document
-
-# Collect all model elements (can filter as needed)
-collector = FilteredElementCollector(doc).WhereElementIsNotElementType().ToElements()
-
-# Simple conversion: collect element ids (for demo; in practice use converter or serialize geometry/params)
-elements_data = []
-for elem in collector:
-    try:
-        # For demonstration, we'll just get element id and name
-        elem_data = {
-            "id": str(elem.Id),
-            "category": elem.Category.Name if elem.Category else "None",
-            "name": elem.Name
-        }
-        elements_data.append(elem_data)
-    except Exception as ex:
-        pass
-
-# Build a Speckle Base object
-speckle_obj = Base()
-speckle_obj["elements"] = elements_data
-speckle_obj["revit_model"] = doc.Title
-
-# Set up the Speckle client and transport
+# Setup client
 client = SpeckleClient(host=SPECKLE_SERVER_URL, use_ssl=True)
 client.authenticate_with_token(SPECKLE_TOKEN)
 transport = ServerTransport(client=client, stream_id=SPECKLE_STREAM_ID)
 
-# Send to Speckle (this creates a new commit)
+# Prepare file as Base object (minimal for demo; you can enhance to parse and add properties)
+speckle_obj = Base()
+speckle_obj["ifc_file"] = open(export_file, "rb").read()  # For small test, otherwise upload to cloud storage and link
+
 commit_id = client.commit.create(
     stream_id=SPECKLE_STREAM_ID,
     object=speckle_obj,
     branch_name="main",
-    message="Automated push from pyRevit"
+    message="Automated IFC upload from pyRevit"
 )
-
-output.print_md("### Model pushed to Speckle!\n**Commit ID:** `{}`".format(commit_id))
-forms.alert("Model data pushed to Speckle successfully!", exitscript=True)
-
+print("Speckle commit ID:", commit_id)
