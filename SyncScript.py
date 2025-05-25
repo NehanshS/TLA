@@ -1,52 +1,65 @@
 from pyrevit import script, forms
-from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, Element
-import os
-import sys
+from Autodesk.Revit.DB import *
+from Autodesk.Revit.UI import *
+import clr, sys, os
 
-# --- SPECKLEPY IMPORTS ---
+# Add path to specklepy if needed (optional, only if Revit Python can't find it)
+# sys.path.append(r"C:\path\to\specklepy")
+
 try:
     from specklepy.api.client import SpeckleClient
     from specklepy.api.credentials import get_local_account
     from specklepy.objects import Base
+    from specklepy.transports.server import ServerTransport
 except ImportError:
-    forms.alert("specklepy is not installed. Please run 'pip install specklepy' in your Python environment.", exitscript=True)
+    forms.alert("Specklepy not installed! Please run 'pip install specklepy' in your Python environment.")
+    raise
 
-# --- SPECKLE CREDENTIALS ---
-SPECKLE_SERVER_URL = "https://speckle.xyz"  # or your org's server
-SPECKLE_TOKEN = "YOUR_SPECKLE_TOKEN"
-SPECKLE_STREAM_ID = "YOUR_STREAM_ID"
+# ==== USER EDITS: Set these ====
+SPECKLE_SERVER_URL = "https://app.speckle.systems"
+SPECKLE_STREAM_ID = "<YOUR_STREAM_ID>"
+SPECKLE_TOKEN = "<YOUR_SPECKLE_TOKEN>"  # Best to keep this in env vars or a config, not in the script
 
-# --- SETUP CLIENT ---
-client = SpeckleClient(host=SPECKLE_SERVER_URL)
-client.authenticate(token=SPECKLE_TOKEN)
+# ==== Main Function ====
+output = script.get_output()
+output.print_md("## Sync Cloud: Push Model to Speckle")
 
-# --- GRAB CURRENT REVIT DOC ---
 doc = __revit__.ActiveUIDocument.Document
 
-# --- EXTRACT MODEL ELEMENTS (Example: All Generic Models) ---
-collector = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_GenericModel).WhereElementIsNotElementType()
-elements = collector.ToElements()
+# Collect all model elements (can filter as needed)
+collector = FilteredElementCollector(doc).WhereElementIsNotElementType().ToElements()
 
-# --- CONVERT ELEMENTS TO SPECKLE BASE OBJECTS ---
-# This is a simple stub - replace with full element property extraction as needed
-speckle_objs = []
-for el in elements:
-    base = Base()
-    base.id = el.Id.IntegerValue
-    base.name = el.Name if hasattr(el, "Name") else "Unnamed"
-    # You can add more properties here...
-    speckle_objs.append(base)
+# Simple conversion: collect element ids (for demo; in practice use converter or serialize geometry/params)
+elements_data = []
+for elem in collector:
+    try:
+        # For demonstration, we'll just get element id and name
+        elem_data = {
+            "id": str(elem.Id),
+            "category": elem.Category.Name if elem.Category else "None",
+            "name": elem.Name
+        }
+        elements_data.append(elem_data)
+    except Exception as ex:
+        pass
 
-# --- CREATE BRANCH OBJECT ---
-branch = Base()
-branch["elements"] = speckle_objs
+# Build a Speckle Base object
+speckle_obj = Base()
+speckle_obj["elements"] = elements_data
+speckle_obj["revit_model"] = doc.Title
 
-# --- CREATE A NEW COMMIT ---
+# Set up the Speckle client and transport
+client = SpeckleClient(host=SPECKLE_SERVER_URL, use_ssl=True)
+client.authenticate_with_token(SPECKLE_TOKEN)
+transport = ServerTransport(client=client, stream_id=SPECKLE_STREAM_ID)
+
+# Send to Speckle (this creates a new commit)
 commit_id = client.commit.create(
     stream_id=SPECKLE_STREAM_ID,
-    object=branch,
-    message="Pushed from pyRevit Weblink Sync Cloud",
-    branch_name="main"
+    object=speckle_obj,
+    branch_name="main",
+    message="Automated push from pyRevit"
 )
 
-forms.alert("Sync to Speckle complete!\nCommit ID: {}".format(commit_id), exitscript=True)
+output.print_md(f"### ✅ Model pushed to Speckle!\n**Commit ID:** `{commit_id}`")
+forms.alert("Model data pushed to Speckle successfully!", exitscript=True)
