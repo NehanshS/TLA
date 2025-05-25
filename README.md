@@ -35,3 +35,6 @@ System.ComponentModel.Win32Exception (0x80004005): WindowsError
  at PyRevitLabs.PyRevit.Runtime.IronPythonEngine.Execute(ScriptRuntime& runtime)
 
  D:\New folder\OneDrive - Cal Poly\Documents\GitHub\TLA\TLA.extension\Tool.tab\AutoSync.group\PushToSpeckle.pushbutton
+
+ python --version
+python -c "import platform; print(platform.python_implementation())"
