@@ -61,5 +61,6 @@ commit_id = client.commit.create(
     message="Automated push from pyRevit"
 )
 
-output.print_md(f"### Model pushed to Speckle! **Commit ID:** `{commit_id}`")
+output.print_md("### Model pushed to Speckle!\n**Commit ID:** `{}`".format(commit_id))
 forms.alert("Model data pushed to Speckle successfully!", exitscript=True)
+
