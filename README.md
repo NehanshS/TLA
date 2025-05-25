@@ -33,3 +33,5 @@ System.ComponentModel.Win32Exception (0x80004005): WindowsError
  at Microsoft.Scripting.Interpreter.LightLambda.Run2[T0,T1,TRet](T0 arg0, T1 arg1)
  at IronPython.Compiler.PythonScriptCode.RunWorker(CodeContext ctx)
  at PyRevitLabs.PyRevit.Runtime.IronPythonEngine.Execute(ScriptRuntime& runtime)
+
+ D:\New folder\OneDrive - Cal Poly\Documents\GitHub\TLA\TLA.extension\Tool.tab\AutoSync.group\PushToSpeckle.pushbutton
