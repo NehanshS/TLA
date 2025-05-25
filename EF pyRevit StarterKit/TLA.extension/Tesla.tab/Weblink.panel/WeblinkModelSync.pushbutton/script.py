@@ -5,8 +5,8 @@ from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
 
 # -- SETTINGS --
-SPECKLE_PUSH_SCRIPT = r"C:\Path\To\your_speckle_push.py"  # Update this!
-WEBAPP_URL = "https://yourwebapp.com/speckleviewer?stream=<STREAM_ID>"
+SPECKLE_PUSH_SCRIPT = r"D:\New folder\OneDrive - Cal Poly\Documents\GitHub\TLA\speckle_push.py"  # Update this!
+WEBAPP_URL = "https://yourwebapp.com/speckleviewer?stream=35ec9c1d80"
 
 # 1. Find default 3D view (or fallback)
 doc = __revit__.ActiveUIDocument.Document
@@ -23,7 +23,7 @@ ifc_options = IFCExportOptions()
 doc.Export(tempdir, "export_3D", ifc_options)
 
 # 3. Call external script to push to Speckle
-python_exe = r"C:\Path\To\python.exe"  # Update for your system!
+python_exe = r"C:\Users\nehaa\AppData\Local\Programs\Python\Python312\python.exe"  # Update for your system!
 os.system(f'"{python_exe}" "{SPECKLE_PUSH_SCRIPT}" "{export_path}"')
 
 # 4. Open your webapp in browser
