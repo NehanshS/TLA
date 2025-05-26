@@ -31,7 +31,8 @@ Then install **Tailwind CSS** and related dependencies:
 
 ```bash
 npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+npx tailwindcss init -p    //npm error could not determine executable to run
+npm error A complete log of this run can be found in: C:\Users\nehaa\AppData\Local\npm-cache\_logs\2025-05-26T04_21_24_218Z-debug-0.log
 ```
 
 This creates two config files:
