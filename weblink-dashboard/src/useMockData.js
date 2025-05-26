@@ -1,17 +1,34 @@
-// src/useMockData.js
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-// Helper: randomize a value by ±5%
+// Helper for value randomization
 function randomizeValue(value, isInt = false) {
-  const factor = 1 + (Math.random() * 0.1 - 0.05); // -5% to +5%
+  const factor = 1 + (Math.random() * 0.1 - 0.05);
   const newValue = value * factor;
   return isInt ? Math.round(newValue) : Math.round(newValue * 100) / 100;
 }
 
+const modeList = [
+  "Workset – Assembly Line A",
+  "Planning – Logistics",
+  "Review – QA",
+];
+const zoneList = [
+  "Zone 1 – Staging",
+  "Zone 2 – Material Handling",
+  "Zone 3 – Final Assembly",
+];
+
 export default function useMockData() {
+  // PROJECT VARIABLE
+  const [projectName, setProjectName] = useState("Gigafactory Austin – North Wing");
+
+  // MODES and ZONES
+  const [modeIdx, setModeIdx] = useState(0);
+  const [zoneIdx, setZoneIdx] = useState(0);
+
+  // DATA
   const [data, setData] = useState({
     header: {
-      projectName: "Gigafactory Austin – North Wing",
       facilityScore: 97,
       lastSynced: "just now",
     },
@@ -27,14 +44,12 @@ export default function useMockData() {
       layoutScore: 87,
       euiScore: 42,
       estimatedWorkers: 320,
-    },
-    mode: "Workset – Assembly Line A",
-    zone: "Zone 1 – Staging",
+    }
   });
 
-  // Track how many seconds since last update for "lastSynced"
   const lastUpdateRef = useRef(Date.now());
 
+  // Update metrics and cost every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       lastUpdateRef.current = Date.now();
@@ -63,7 +78,7 @@ export default function useMockData() {
           header: {
             ...prev.header,
             facilityScore,
-            lastSynced: "just now", // Will update with timer below
+            lastSynced: "just now",
           },
           cost: newCost,
           metrics: newMetrics,
@@ -71,7 +86,7 @@ export default function useMockData() {
       });
     }, 10000);
 
-    // Sub-interval for "lastSynced" time ago
+    // "Last Synced" text
     const timer = setInterval(() => {
       setData((prev) => {
         const seconds = Math.round((Date.now() - lastUpdateRef.current) / 1000);
@@ -92,5 +107,28 @@ export default function useMockData() {
     };
   }, []);
 
-  return data;
+  // FUNCTIONS to switch modes/zones
+  const nextMode = useCallback(() => setModeIdx(i => (i + 1) % modeList.length), []);
+  const prevMode = useCallback(() => setModeIdx(i => (i - 1 + modeList.length) % modeList.length), []);
+  const nextZone = useCallback(() => setZoneIdx(i => (i + 1) % zoneList.length), []);
+  const prevZone = useCallback(() => setZoneIdx(i => (i - 1 + zoneList.length) % zoneList.length), []);
+
+  return {
+    header: {
+      ...data.header,
+      projectName,
+      setProjectName,
+    },
+    cost: data.cost,
+    metrics: data.metrics,
+    mode: modeList[modeIdx],
+    zone: zoneList[zoneIdx],
+    modes: modeList,
+    zones: zoneList,
+    setProjectName,
+    nextMode,
+    prevMode,
+    nextZone,
+    prevZone,
+  };
 }
