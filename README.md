@@ -152,3 +152,13 @@ npm error A complete log of this run can be found in: C:\Users\nehaa\AppData\Loc
 Remove-Item -Recurse -Force node_modules
 Remove-Item package-lock.json
 npm cache clean --force
+
+
++-- @vitejs/plugin-react@4.5.0
++-- autoprefixer@10.4.21
++-- framer-motion@12.14.0
++-- postcss@8.5.3
++-- react-dom@18.3.1
++-- react@18.3.1
++-- tailwindcss@3.4.17
+`-- vite@6.3.5
