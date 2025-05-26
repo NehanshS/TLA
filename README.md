@@ -129,36 +129,4 @@ Let me know when you want to connect the SDK or wire up live listeners!
 
 You'll see your project live at http://localhost:5173.
 
-PS D:\New folder\OneDrive - Cal Poly\Documents\GitHub\TLA\weblink-dashboard> npm install @speckle/viewer @speckle/sdk
-npm error code E404
-npm error 404 Not Found - GET https://registry.npmjs.org/@speckle%2fsdk - Not found
-npm error 404
-npm error 404  '@speckle/sdk@*' is not in this registry.
-npm error 404
-npm error 404 Note that you can also install from a
-npm error 404 tarball, folder, http url, or git url.
-npm error A complete log of this run can be found in: C:\Users\nehaa\AppData\Local\npm-cache\_logs\2025-05-26T19_40_45_229Z-debug-0.log
-PS D:\New folder\OneDrive - Cal Poly\Documents\GitHub\TLA\weblink-dashboard> npm install @speckle/client
-npm error code E404
-npm error 404 Not Found - GET https://registry.npmjs.org/@speckle%2fclient - Not found
-npm error 404
-npm error 404  '@speckle/client@*' is not in this registry.
-npm error 404
-npm error 404 Note that you can also install from a
-npm error 404 tarball, folder, http url, or git url.
-npm error A complete log of this run can be found in: C:\Users\nehaa\AppData\Local\npm-cache\_logs\2025-05-26T19_48_11_623Z-debug-0.log
-
-
-Remove-Item -Recurse -Force node_modules
-Remove-Item package-lock.json
-npm cache clean --force
-
-
-+-- @vitejs/plugin-react@4.5.0
-+-- autoprefixer@10.4.21
-+-- framer-motion@12.14.0
-+-- postcss@8.5.3
-+-- react-dom@18.3.1
-+-- react@18.3.1
-+-- tailwindcss@3.4.17
-`-- vite@6.3.5
+<iframe title="Speckle" src="https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D" width="600" height="400" frameborder="0"></iframe>
