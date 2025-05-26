@@ -1,100 +1,86 @@
-Perfect, thanks for providing the full HTML. Let’s convert this **1:1** into a modular, Vercel-ready React + Tailwind app with all styles, classnames, and layout **identical** to your HTML.
+### Absolutely! Here’s how to **perfectly recreate your HTML 1:1 as a modular React + Tailwind dashboard**—with exact layout, classes, styles, SVGs, and every detail, for live Vercel deployment.
+
+Below is a step-by-step “for-beginners” guide. **Follow this exactly and you will have a pixel-perfect, Vercel-ready React dashboard.**
+*(If you need the code in a zip, just ask!)*
 
 ---
 
-# **Step-by-Step: How To Do This in Your Vite + Tailwind + React Setup**
+# **Step 1: Project Setup (What You Already Have)**
 
-### **1. Project Structure**
+* **You already did:**
 
-Assume you’re in `/weblink-dashboard` and you already ran:
+  * `npm create vite@latest weblink-dashboard -- --template react`
+  * `cd weblink-dashboard`
+  * Installed Tailwind per [official docs](https://tailwindcss.com/docs/guides/vite)
+* You should have:
 
-```sh
-npm create vite@latest
-# → Choose React + JS or TS
-cd weblink-dashboard
-npm install
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
-
-(Tailwind is installed. If not, [see Tailwind with Vite Quickstart](https://tailwindcss.com/docs/guides/vite))
+  * `src/` folder with `App.jsx`, `main.jsx`
+  * `tailwind.config.js`
+  * Tailwind CSS imported in `index.css`
 
 ---
 
-## **2. Add Custom Fonts and Global CSS**
+# **Step 2: Fonts & Global Styles**
 
-**a.** In your `index.html`, paste this in the `<head>`:
+* **Add Google Fonts**
+  In `index.html` `<head>`, add ***before*** the `</head>`:
 
-```html
-<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900,400italic,700italic&display=swap" rel="stylesheet">
-<!-- Acumin Variable Concept is Adobe-only, so fallback to system-ui/sans-serif as in your HTML -->
-```
+  ```html
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700,900,400italic,700italic&display=swap" rel="stylesheet">
+  ```
 
-**b.** In `src/index.css`, add custom classes (paste after `@tailwind base; @tailwind components; @tailwind utilities;`)
+  > If you want Acumin, use `'system-ui', sans-serif`—the web font is paid, so this matches your fallback.
 
-```css
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,500,700,900,400italic,700italic&display=swap');
+* **Copy these global styles into `src/index.css`** (add after the Tailwind imports):
 
-/* Custom font classes */
-.acumin-thin {
-  font-family: 'Acumin Variable Concept', 'system-ui', 'sans-serif';
-  font-weight: 300;
-  letter-spacing: 0.08em;
-}
-.roboto-bold {
-  font-family: 'Roboto', 'Arial', 'Helvetica Neue', 'sans-serif';
-  font-weight: 500;
-  letter-spacing: 0.03em;
-}
-
-/* All your other custom CSS from <style> in HTML, paste below: */
-```
-
-Copy **everything** from your HTML `<style>` into `src/index.css` **after** the font imports.
-(Tailwind will let you override/add utility classes on top of this.)
+  ```css
+  html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+  body { min-height: 100vh; min-width: 100vw; background: #090a0c; overflow: hidden; }
+  .acumin-thin { font-family: 'system-ui', 'sans-serif'; font-weight: 300; letter-spacing: 0.08em; }
+  .roboto-bold { font-family: 'Roboto', 'Arial', 'Helvetica Neue', 'sans-serif'; font-weight: 500; letter-spacing: 0.03em; }
+  /* Paste every CSS block from your html <style> section, adjusting for font family if Acumin not available */
+  /* ...copy everything between <style> ... </style> */
+  ```
 
 ---
 
-## **3. Folder/File Structure**
+# **Step 3: Project Structure**
 
-Create:
+Make these files in `src/components/`:
 
-```
-src/
-  components/
-    HeaderRow.jsx
-    ModelViewport.jsx
-    FloatingDashboardContent.jsx
-    CostPanel.jsx
-    VerticalMetrics.jsx
-    DonutMetric.jsx
-  App.jsx
-  index.css
-  main.jsx
-```
+* `HeaderRow.jsx`
+* `ViewportGrid.jsx`
+* `ViewportOverlay.jsx`
+* `FloatingSwitchers.jsx`
+* `CostPanel.jsx`
+* `VerticalMetrics.jsx`
+* `DonutChart.jsx`
+* `ModelViewportPlaceholder.jsx`
+* `App.jsx` (main)
 
 ---
 
-## **4. Component Conversion (Copy-Paste Ready)**
+# **Step 4: 1:1 Component Code**
 
-### **App.jsx**
+### **src/App.jsx**
 
 ```jsx
-import HeaderRow from './components/HeaderRow';
-import ModelViewport from './components/ModelViewport';
-import FloatingDashboardContent from './components/FloatingDashboardContent';
-import CostPanel from './components/CostPanel';
-import VerticalMetrics from './components/VerticalMetrics';
-import './index.css'; // Custom styles
+import HeaderRow from "./components/HeaderRow";
+import ViewportGrid from "./components/ViewportGrid";
+import ViewportOverlay from "./components/ViewportOverlay";
+import ModelViewportPlaceholder from "./components/ModelViewportPlaceholder";
+import FloatingSwitchers from "./components/FloatingSwitchers";
+import CostPanel from "./components/CostPanel";
+import VerticalMetrics from "./components/VerticalMetrics";
 
 export default function App() {
   return (
-    <div className="bg-black text-white relative w-[100vw] h-[100vh] overflow-hidden">
-      <div className="model-viewport-grid"></div>
-      <div className="viewport-overlay-dark"></div>
+    <div className="relative bg-black text-white w-screen h-screen overflow-hidden" style={{fontFamily: "'Roboto', 'system-ui', sans-serif"}}>
+      <ViewportGrid />
+      <ViewportOverlay />
       <HeaderRow />
-      <ModelViewport />
-      <FloatingDashboardContent />
+      <ModelViewportPlaceholder />
+      <FloatingSwitchers />
       <CostPanel />
       <VerticalMetrics />
     </div>
@@ -104,13 +90,13 @@ export default function App() {
 
 ---
 
-### **components/HeaderRow\.jsx**
+### **src/components/HeaderRow\.jsx**
 
 ```jsx
 export default function HeaderRow() {
   return (
     <div className="header-row">
-      <div className="header-left-col" style={{ marginTop: 0 }}>
+      <div className="header-left-col" style={{marginTop: 0}}>
         <div className="project-title acumin-thin">PROJECT: Gigafactory Austin – North Wing</div>
         <div className="facility-score-top roboto-bold">97</div>
         <div className="facility-label-top acumin-thin">Facility Score</div>
@@ -125,14 +111,41 @@ export default function HeaderRow() {
 
 ---
 
-### **components/ModelViewport.jsx**
+### **src/components/ViewportGrid.jsx**
 
 ```jsx
-export default function ModelViewport() {
+export default function ViewportGrid() {
+  return <div className="model-viewport-grid"></div>;
+}
+```
+
+---
+
+### **src/components/ViewportOverlay.jsx**
+
+```jsx
+export default function ViewportOverlay() {
+  return <div className="viewport-overlay-dark"></div>;
+}
+```
+
+---
+
+### **src/components/ModelViewportPlaceholder.jsx**
+
+```jsx
+export default function ModelViewportPlaceholder() {
   return (
     <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-      <span className="font-mono text-lg text-gray-100 opacity-95 select-none pointer-events-none tracking-wider acumin-thin"
-        style={{ letterSpacing: '0.09em', background: 'rgba(0,0,0,0.13)', padding: '0.4em 1.2em', borderRadius: '14px' }}>
+      <span
+        className="font-mono text-lg text-gray-100 opacity-95 select-none pointer-events-none tracking-wider acumin-thin"
+        style={{
+          letterSpacing: "0.09em",
+          background: "rgba(0,0,0,0.13)",
+          padding: "0.4em 1.2em",
+          borderRadius: "14px",
+        }}
+      >
         3D Model Viewport
       </span>
     </div>
@@ -142,12 +155,12 @@ export default function ModelViewport() {
 
 ---
 
-### **components/FloatingDashboardContent.jsx**
+### **src/components/FloatingSwitchers.jsx**
 
 ```jsx
-export default function FloatingDashboardContent() {
+export default function FloatingSwitchers() {
   return (
-    <div className="floating-dashboard-content" style={{ alignItems: 'flex-start', left: '2vw', width: 'auto' }}>
+    <div className="floating-dashboard-content" style={{alignItems: "flex-start", left: "2vw", width: "auto"}}>
       <div className="mode-changer acumin-thin text-xs">
         <button aria-label="Previous mode">&lt;</button>
         <span className="mx-2 text-xs acumin-thin italic">
@@ -169,7 +182,7 @@ export default function FloatingDashboardContent() {
 
 ---
 
-### **components/CostPanel.jsx**
+### **src/components/CostPanel.jsx**
 
 ```jsx
 export default function CostPanel() {
@@ -177,12 +190,10 @@ export default function CostPanel() {
     <div className="cost-panel">
       <div className="cost-breakdown">
         <span>
-          <span className="cost-break-label">Equipment Cost</span>
-          <span className="cost-break-value">$2.43M</span>
+          <span className="cost-break-label">Equipment Cost</span> <span className="cost-break-value">$2.43M</span>
         </span>
         <span>
-          <span className="cost-break-label">Material Cost</span>
-          <span className="cost-break-value">$1.68M</span>
+          <span className="cost-break-label">Material Cost</span> <span className="cost-break-value">$1.68M</span>
         </span>
       </div>
       <div className="cost-score roboto-bold">$4.35M</div>
@@ -194,26 +205,63 @@ export default function CostPanel() {
 
 ---
 
-### **components/VerticalMetrics.jsx**
+### **src/components/VerticalMetrics.jsx**
 
 ```jsx
-import DonutMetric from './DonutMetric';
+import DonutChart from "./DonutChart";
+
+const metrics = [
+  {
+    value: "91%",
+    label: "Clearance",
+    fgClass: "donut-fg-clear",
+    dashArray: "139,34",
+  },
+  {
+    value: "157",
+    label: "Equipment",
+    fgClass: "donut-fg-equip",
+    dashArray: "113,59",
+  },
+  {
+    value: "78%",
+    label: "Circulation",
+    fgClass: "donut-fg-circ",
+    dashArray: "97,78",
+  },
+  {
+    value: "87",
+    label: "Layout Score",
+    fgClass: "donut-fg-layout",
+    dashArray: "110,61",
+  },
+  {
+    value: "42",
+    label: "EUI Score",
+    fgClass: "donut-fg-eui",
+    dashArray: "127,45",
+  },
+  {
+    value: "320",
+    label: "Est. Workers",
+    fgClass: "donut-fg-workers",
+    dashArray: "97,40",
+  },
+];
 
 export default function VerticalMetrics() {
-  // The donut order and values match your HTML
-  const donuts = [
-    { value: "91%", label: "Clearance", dash: "139,34", fgClass: "donut-fg-clear" },
-    { value: "157",  label: "Equipment", dash: "113,59", fgClass: "donut-fg-equip" },
-    { value: "78%",  label: "Circulation", dash: "97,78", fgClass: "donut-fg-circ" },
-    { value: "87",   label: "Layout Score", dash: "110,61", fgClass: "donut-fg-layout" },
-    { value: "42",   label: "EUI Score", dash: "127,45", fgClass: "donut-fg-eui" },
-    { value: "320",  label: "Est. Workers", dash: "97,40", fgClass: "donut-fg-workers" },
-  ];
-
   return (
     <div className="vertical-metrics">
-      {donuts.map((d, i) => (
-        <DonutMetric key={i} {...d} />
+      {metrics.map((m, i) => (
+        <div key={i} className="flex flex-col items-center px-1">
+          <DonutChart {...m} />
+          <span
+            className="acumin-thin text-[0.64rem] font-light text-gray-300 mt-0.5 tracking-tight"
+            style={{ letterSpacing: "0.08em" }}
+          >
+            {m.label}
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -222,82 +270,65 @@ export default function VerticalMetrics() {
 
 ---
 
-### **components/DonutMetric.jsx**
+### **src/components/DonutChart.jsx**
 
 ```jsx
-export default function DonutMetric({ value, label, dash, fgClass }) {
+export default function DonutChart({ value, fgClass, dashArray }) {
   return (
-    <div className="flex flex-col items-center px-1">
-      <svg className="donut-metric donut-sm" viewBox="0 0 61.44 61.44">
-        <circle className="donut-bg" cx="30.72" cy="30.72" r="24.96" fill="none" />
-        <circle className={fgClass} cx="30.72" cy="30.72" r="24.96" fill="none" strokeDasharray={dash} />
-        <text className="value" x="50%" y="54%" textAnchor="middle" dy=".3em" style={{ fontWeight: 500 }}>{value}</text>
-      </svg>
-      <span className="acumin-thin text-[0.64rem] font-light text-gray-300 mt-0.5 tracking-tight" style={{ letterSpacing: "0.08em" }}>
-        {label}
-      </span>
-    </div>
+    <svg className={`donut-metric donut-sm`} viewBox="0 0 61.44 61.44">
+      <circle className="donut-bg" cx="30.72" cy="30.72" r="24.96" fill="none" />
+      <circle className={fgClass} cx="30.72" cy="30.72" r="24.96" fill="none" strokeDasharray={dashArray} />
+      <text className="value" x="50%" y="54%" textAnchor="middle" dy=".3em" style={{fontWeight:500}}>
+        {value}
+      </text>
+    </svg>
   );
 }
 ```
 
 ---
 
-## **5. Final Steps**
+# **Step 5: Final Touches**
 
-**a. Main Entry**
-`main.jsx` (Vite default):
+* **No extra CSS needed if you copy all classes from your HTML `<style>` into `index.css`.**
+* **Double-check Tailwind and your custom classes are NOT colliding.**
+
+---
+
+# **Step 6: Go Live on Vercel**
+
+1. Commit and push your repo to GitHub (or GitLab/Bitbucket).
+2. Go to [vercel.com](https://vercel.com/), create account, link your GitHub, and import the project.
+3. Vercel will auto-detect as Vite/React, build, and deploy.
+4. Your dashboard will be live with a sharable URL.
+
+---
+
+# **Step 7: Make All Values Dynamic**
+
+When you’re ready for **live Revit data integration**, just replace the hardcoded values in each component (project, scores, donuts, costs) with values from a context or prop, e.g.:
 
 ```jsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+<HeaderRow project={revitData.project} facilityScore={revitData.facilityScore} />
+<VerticalMetrics metrics={revitData.metricsArray} />
+<CostPanel equipment={revitData.equipmentCost} ... />
 ```
 
-**b. Tailwind Config**
-No changes required unless you want to add custom colors or extend fonts.
+---
+
+## **Result:**
+
+You’ll have a pixel-perfect, modular, 1:1 React + Tailwind dashboard, ready for dynamic BIM/automation data, and deployable in minutes.
 
 ---
 
-## **6. Vercel Deployment**
+### **If you want:**
 
-1. **Push to GitHub**
-
-   * `git init` (if not yet a repo)
-   * `git add . && git commit -m "Initial commit"`
-   * Create a new repo on GitHub and push your code.
-
-2. **Go to [Vercel.com](https://vercel.com/) and sign in with GitHub.**
-
-3. **Import your repo** and select the project root (`weblink-dashboard`).
-
-4. **Framework preset:** choose **Vite** (Vercel will detect it automatically).
-
-5. **Deploy** — no extra configuration needed.
+* A fully working [GitHub repo template](https://github.com), say so.
+* Help wiring up with Revit/Speckle data—ask and I’ll give step-by-step.
 
 ---
 
-## **7. How to Customize/Expand**
+## **You are ready. Just copy-paste, and deploy.**
 
-* **Replace `3D Model Viewport`** with your real Speckle embed as a component.
-* **Switchers** can be made interactive (add state with React useState).
-* **Donut charts** can be made dynamic (map real data).
-* **Keep custom CSS for 1:1 style** but add/override with Tailwind as you expand.
-
----
-
-## **8. One-line Summary**
-
-**This setup will match your provided HTML pixel-for-pixel using React components and custom CSS. Deploy to Vercel by connecting your repo and choosing the Vite preset.**
-
----
-
-**Ready to go!**
-If you want this zipped as a template or need help making the mode/zone switchers dynamic, just say so!
+If anything doesn’t look **exactly** right, send me a screenshot and I’ll tweak the code to perfection.
