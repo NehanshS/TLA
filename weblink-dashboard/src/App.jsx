@@ -8,28 +8,17 @@ import CostPanel from "./components/CostPanel";
 import VerticalMetrics from "./components/VerticalMetrics";
 
 export default function App() {
-  const data = useMockData();
+  const { header, cost, mode, zone, metrics } = useMockData();
 
   return (
     <div className="relative bg-black text-white w-screen h-screen overflow-hidden" style={{fontFamily: "'Roboto', 'system-ui', sans-serif"}}>
       <ViewportGrid />
       <ViewportOverlay />
-      <HeaderRow
-        projectName={data.header.projectName}
-        facilityScore={data.header.facilityScore}
-        lastSynced={data.header.lastSynced}
-      />
+      <HeaderRow header={header} />
       <ModelViewportPlaceholder />
-      <FloatingSwitchers
-        mode={data.mode}
-        zone={data.zone}
-      />
-      <CostPanel
-        equipmentCost={data.cost.equipmentCost}
-        materialCost={data.cost.materialCost}
-        totalCost={data.cost.totalCost}
-      />
-      <VerticalMetrics metrics={data.metrics} />
+      <FloatingSwitchers mode={mode} zone={zone} />
+      <CostPanel cost={cost} />
+      <VerticalMetrics metrics={metrics} />
     </div>
   );
 }
