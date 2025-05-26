@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 
-// Mock metrics (replace with real data when available)
 const MOCK_METRICS = {
   clearance: 91,
   equipment: 157,
@@ -20,7 +19,6 @@ export default function useSpeckleData(streamId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch metadata function
   const fetchStream = async () => {
     if (!streamId) return;
     setLoading(true);
@@ -33,7 +31,7 @@ export default function useSpeckleData(streamId) {
         projectName: json.stream.name,
         updatedAt: json.stream.updatedAt,
         commitCount: json.stream.commits.totalCount,
-        metrics: MOCK_METRICS,
+        metrics: MOCK_METRICS, // Always return mock metrics for now, ready to swap for real metrics
       });
     } catch (err) {
       setError(err.message || "Unknown error");

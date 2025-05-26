@@ -1,6 +1,6 @@
-// Swap this import to switch data sources:
-import useMockData from "./useMockData";
-// import useSpeckleData from "./useSpeckleData"; // <-- Swap this line when you want Speckle!
+// Use only one data source at a time, swap as needed
+// import useMockData from "./useMockData";
+import useSpeckleData from "./useSpeckleData";
 
 import HeaderRow from "./components/HeaderRow";
 import ViewportGrid from "./components/ViewportGrid";
@@ -10,21 +10,16 @@ import FloatingSwitchers from "./components/FloatingSwitchers";
 import CostPanel from "./components/CostPanel";
 import VerticalMetrics from "./components/VerticalMetrics";
 
-const STREAM_ID = "YOUR_STREAM_ID_HERE"; // Place your Speckle stream id here
+// Load IDs from env with fallback
+const streamId = import.meta.env.VITE_SPECKLE_STREAM_ID || "default-stream-id";
+const commitId = import.meta.env.VITE_SPECKLE_COMMIT_ID || undefined;
 
 export default function App() {
-  // Swap the hook here to use either mock or live data
-  const {
-    projectName,
-    updatedAt,
-    commitCount,
-    metrics,
-    loading,
-    error
-  } = useMockData(STREAM_ID);
-  // } = useSpeckleData(STREAM_ID);
+  // Swap to useMockData if you want to dev offline:
+  // const { projectName, updatedAt, commitCount, metrics, loading, error } = useMockData(streamId);
+  const { projectName, updatedAt, commitCount, metrics, loading, error } = useSpeckleData(streamId);
 
-  // (Optional) Replace mock switchers/cost if you want to keep mode/zone/fake costs for now
+  // (Optionally keep static mode/zone/fake costs for now)
   const mode = "Workset – Assembly Line A";
   const zone = "Zone 1 – Staging";
   const setProjectName = () => {};
@@ -53,7 +48,7 @@ export default function App() {
     <div className="relative bg-black text-white w-screen h-screen overflow-hidden" style={{fontFamily: "'Roboto', 'system-ui', sans-serif"}}>
       <ViewportGrid />
       <div className="absolute inset-0 z-10">
-        <SpeckleViewer streamId={STREAM_ID} />
+        <SpeckleViewer streamId={streamId} commitId={commitId} />
       </div>
       <ViewportOverlay />
       <HeaderRow
