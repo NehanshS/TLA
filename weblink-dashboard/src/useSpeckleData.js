@@ -1,66 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-// These lists should match your app's logic
-const modeList = [
-  "Workset – Assembly Line A",
-  "Planning – Logistics",
-  "Review – QA",
-];
-const zoneList = [
-  "Zone 1 – Staging",
-  "Zone 2 – Material Handling",
-  "Zone 3 – Final Assembly",
-];
+// Mock metrics (replace with real data when available)
+const MOCK_METRICS = {
+  clearance: 91,
+  equipment: 157,
+  circulation: 78,
+  layoutScore: 87,
+  euiScore: 42,
+  estimatedWorkers: 320,
+};
 
-export default function useSpeckleData() {
-  // --- Project, Modes, Zones
-  const [projectName, setProjectName] = useState("Gigafactory Austin – North Wing");
-  const [modeIdx, setModeIdx] = useState(0);
-  const [zoneIdx, setZoneIdx] = useState(0);
-
-  // --- Static data (update with live Speckle data later)
-  const [data] = useState({
-    header: {
-      facilityScore: 97,
-      lastSynced: "just now",
-    },
-    cost: {
-      equipmentCost: 2.43,
-      materialCost: 1.68,
-      totalCost: 4.11,
-    },
-    metrics: {
-      clearance: 91,
-      equipment: 157,
-      circulation: 78,
-      layoutScore: 87,
-      euiScore: 42,
-      estimatedWorkers: 320,
-    }
+export default function useSpeckleData(streamId) {
+  const [data, setData] = useState({
+    projectName: "",
+    updatedAt: "",
+    commitCount: 0,
+    metrics: MOCK_METRICS,
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Functions for switching modes/zones
-  const nextMode = () => setModeIdx(i => (i + 1) % modeList.length);
-  const prevMode = () => setModeIdx(i => (i - 1 + modeList.length) % modeList.length);
-  const nextZone = () => setZoneIdx(i => (i + 1) % zoneList.length);
-  const prevZone = () => setZoneIdx(i => (i - 1 + zoneList.length) % zoneList.length);
-
-  return {
-    header: {
-      ...data.header,
-      projectName,
-      setProjectName,
-    },
-    cost: data.cost,
-    metrics: data.metrics,
-    mode: modeList[modeIdx],
-    zone: zoneList[zoneIdx],
-    modes: modeList,
-    zones: zoneList,
-    setProjectName,
-    nextMode,
-    prevMode,
-    nextZone,
-    prevZone,
+  // Fetch metadata function
+  const fetchStream = async () => {
+    if (!streamId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`https://latest.speckle.dev/api/streams/${streamId}`);
+      if (!response.ok) throw new Error("Speckle stream not found or API error");
+      const json = await response.json();
+      setData({
+        projectName: json.stream.name,
+        updatedAt: json.stream.updatedAt,
+        commitCount: json.stream.commits.totalCount,
+        metrics: MOCK_METRICS,
+      });
+    } catch (err) {
+      setError(err.message || "Unknown error");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchStream();
+    const interval = setInterval(fetchStream, 15000);
+    return () => clearInterval(interval);
+  }, [streamId]);
+
+  return { ...data, loading, error };
 }
