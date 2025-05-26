@@ -147,3 +147,8 @@ npm error 404
 npm error 404 Note that you can also install from a
 npm error 404 tarball, folder, http url, or git url.
 npm error A complete log of this run can be found in: C:\Users\nehaa\AppData\Local\npm-cache\_logs\2025-05-26T19_48_11_623Z-debug-0.log
+
+
+Remove-Item -Recurse -Force node_modules
+Remove-Item package-lock.json
+npm cache clean --force
