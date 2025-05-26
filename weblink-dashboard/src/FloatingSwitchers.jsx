@@ -1,6 +1,6 @@
-export default function FloatingDashboardContent() {
+export default function FloatingSwitchers() {
   return (
-    <div className="floating-dashboard-content" style={{ alignItems: 'flex-start', left: '2vw', width: 'auto' }}>
+    <div className="floating-dashboard-content" style={{alignItems: "flex-start", left: "2vw", width: "auto"}}>
       <div className="mode-changer acumin-thin text-xs">
         <button aria-label="Previous mode">&lt;</button>
         <span className="mx-2 text-xs acumin-thin italic">

@@ -1,12 +1,23 @@
-import React from 'react';
 
-function App() {
+import HeaderRow from "./components/HeaderRow";
+import ViewportGrid from "./components/ViewportGrid";
+import ViewportOverlay from "./components/ViewportOverlay";
+import ModelViewportPlaceholder from "./components/ModelViewportPlaceholder";
+import FloatingSwitchers from "./components/FloatingSwitchers";
+import CostPanel from "./components/CostPanel";
+import VerticalMetrics from "./components/VerticalMetrics";
+
+export default function App() {
   return (
-    <div className="p-8 text-center">
-      <h1 className="text-3xl font-bold text-cyan-400">Welcome to Weblink Dashboard</h1>
-      <p className="mt-4 text-gray-300">Your cyberpunk UI starts here.</p>
+    <div className="relative bg-black text-white w-screen h-screen overflow-hidden" style={{fontFamily: "'Roboto', 'system-ui', sans-serif"}}>
+      <ViewportGrid />
+      <ViewportOverlay />
+      <HeaderRow />
+      <ModelViewportPlaceholder />
+      <FloatingSwitchers />
+      <CostPanel />
+      <VerticalMetrics />
     </div>
   );
 }
 
-export default App;
