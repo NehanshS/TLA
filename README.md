@@ -332,3 +332,5 @@ You’ll have a pixel-perfect, modular, 1:1 React + Tailwind dashboard, ready fo
 ## **You are ready. Just copy-paste, and deploy.**
 
 If anything doesn’t look **exactly** right, send me a screenshot and I’ll tweak the code to perfection.
+
+You'll see your project live at http://localhost:5173.
