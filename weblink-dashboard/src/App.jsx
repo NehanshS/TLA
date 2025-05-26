@@ -1,7 +1,3 @@
-// Use only one data source at a time, swap as needed
-// import useMockData from "./useMockData";
-import useSpeckleData from "./useSpeckleData";
-
 import HeaderRow from "./components/HeaderRow";
 import ViewportGrid from "./components/ViewportGrid";
 import ViewportOverlay from "./components/ViewportOverlay";
@@ -10,16 +6,23 @@ import FloatingSwitchers from "./components/FloatingSwitchers";
 import CostPanel from "./components/CostPanel";
 import VerticalMetrics from "./components/VerticalMetrics";
 
-// Load IDs from env with fallback
-const streamId = import.meta.env.VITE_SPECKLE_STREAM_ID || "default-stream-id";
-const commitId = import.meta.env.VITE_SPECKLE_COMMIT_ID || undefined;
+// Get the Speckle embed URL from .env
+const embedUrl = import.meta.env.VITE_SPECKLE_EMBED_URL || "";
 
 export default function App() {
-  // Swap to useMockData if you want to dev offline:
-  // const { projectName, updatedAt, commitCount, metrics, loading, error } = useMockData(streamId);
-  const { projectName, updatedAt, commitCount, metrics, loading, error } = useSpeckleData(streamId);
+  // The rest of your modular hooks/data remain unchanged (useMockData, useSpeckleData, etc.)
+  // e.g.:
+  // const { projectName, ... } = useMockData();
 
-  // (Optionally keep static mode/zone/fake costs for now)
+  // Example static values for demonstration (replace with your data hooks as needed)
+  const projectName = "Speckle Project Demo";
+  const facilityScore = 97;
+  const lastSynced = "now";
+  const cost = { equipmentCost: 2.43, materialCost: 1.68, totalCost: 4.11 };
+  const metrics = {
+    clearance: 91, equipment: 157, circulation: 78,
+    layoutScore: 87, euiScore: 42, estimatedWorkers: 320
+  };
   const mode = "Workset – Assembly Line A";
   const zone = "Zone 1 – Staging";
   const setProjectName = () => {};
@@ -27,36 +30,20 @@ export default function App() {
   const prevMode = () => {};
   const nextZone = () => {};
   const prevZone = () => {};
-  const cost = {
-    equipmentCost: 2.43,
-    materialCost: 1.68,
-    totalCost: 4.11
-  };
-
-  if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-black text-gray-300">
-      Loading Speckle stream metadata...
-    </div>
-  );
-  if (error) return (
-    <div className="flex items-center justify-center h-screen bg-black text-red-400">
-      Error loading stream: {error}
-    </div>
-  );
 
   return (
     <div className="relative bg-black text-white w-screen h-screen overflow-hidden" style={{fontFamily: "'Roboto', 'system-ui', sans-serif"}}>
       <ViewportGrid />
       <div className="absolute inset-0 z-10">
-        <SpeckleViewer streamId={streamId} commitId={commitId} />
+        <SpeckleViewer embedUrl={embedUrl} />
       </div>
       <ViewportOverlay />
       <HeaderRow
         projectName={projectName}
-        facilityScore={metrics.layoutScore}
-        lastSynced={updatedAt}
+        facilityScore={facilityScore}
+        lastSynced={lastSynced}
         setProjectName={setProjectName}
-        commitCount={commitCount}
+        commitCount={12}
       />
       <FloatingSwitchers
         mode={mode}
