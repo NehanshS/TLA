@@ -167,6 +167,17 @@ body { min-height: 100vh; min-width: 100vw; background: #090a0c; overflow: hidde
 .donut-sm { width: 61.44px !important; height: 61.44px !important; }
 
 /* SWITCHERS */
+.floating-switchers {
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: flex-end;
+  position: absolute;
+  top: 70px;
+  right: 2vw;
+  z-index: 120;
+  gap: 2.2rem;
+  pointer-events: auto;
+  padding: 0.6rem 1.6rem 0.6rem 1.6rem;
+}
 .mode-changer, .zone-changer {
   display: flex; align-items: center; justify-content: center;
   width: 100%; max-width: 460px;
