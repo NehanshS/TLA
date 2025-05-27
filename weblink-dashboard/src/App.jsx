@@ -34,8 +34,8 @@ export default function App() {
   return (
     <div className="relative bg-black text-white w-screen h-screen overflow-hidden" style={{fontFamily: "'Roboto', 'system-ui', sans-serif"}}>
       <ViewportGrid />
-      <div className="absolute inset-0 z-10">
-        <SpeckleViewer embedUrl={embedUrl} />
+      <div>
+      <center><iframe classname="relative mx-auto" title="Speckle" src="https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%2C%22manualLoad%22%3Atrue%7D" width="2048" height="1080" frameborder="0"></iframe></center> 
       </div>
       <ViewportOverlay />
       <HeaderRow

@@ -1,6 +1,13 @@
 import React from "react";
 
-export default function SpeckleViewer({ embedUrl, style = {} }) {
+export default function SpeckleViewer({ embedUrl, style={
+        width: "100%",
+        height: "100%",
+        border: "none",
+        borderRadius: "14px",
+        background: "transparent",
+        ...style
+      }}) {
   if (!embedUrl) {
     return (
       <div className="flex items-center justify-center w-full h-full bg-black/40 rounded-[14px]">
