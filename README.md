@@ -603,23 +603,6 @@ If you find any issues with this guide, or the apps code, feel free to report th
 
 localhost/:1 Access to fetch at 'https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467' from origin 'http://localhost:5177' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
 
-<<<<<<< HEAD
-
-useSpeckleData.js:105 
- GET https://app.speckle.systems/api/v1/projects/4fbfe07d27/models/0fb53e3467 net::ERR_NAME_NOT_RESOLVED
-fetchData	@	useSpeckleData.js:105
-(anonymous)	@	useSpeckleData.js:160
-commitHookEffectListMount	@	chunk-SVG7M4VJ.js?v=b1a27833:16961
-invokePassiveEffectMountInDEV	@	chunk-SVG7M4VJ.js?v=b1a27833:18372
-invokeEffectsInDev	@	chunk-SVG7M4VJ.js?v=b1a27833:19752
-commitDoubleInvokeEffectsInDEV	@	chunk-SVG7M4VJ.js?v=b1a27833:19737
-flushPassiveEffectsImpl	@	chunk-SVG7M4VJ.js?v=b1a27833:19554
-flushPassiveEffects	@	chunk-SVG7M4VJ.js?v=b1a27833:19498
-(anonymous)	@	chunk-SVG7M4VJ.js?v=b1a27833:19379
-workLoop	@	chunk-SVG7M4VJ.js?v=b1a27833:195
-flushWork	@	chunk-SVG7M4VJ.js?v=b1a27833:174
-performWorkUntilDeadline	@	chunk-SVG7M4VJ.js?v=b1a27833:382
-=======
 git clone git@github.com:specklesystems/speckle-server.git or, alternatively git clone https://github.com/specklesystems/speckle-server.git
 cd speckle-server
 corepack enable
@@ -631,4 +614,3 @@ cp packages/server/.env.test-example packages/server/.env.test
 cp packages/frontend-2/.env.example packages/frontend-2/.env
 cp packages/dui3/.env.example packages/dui3/.env
 yarn dev
->>>>>>> 17aec24f9ca1db81f660db3caf517b2c4edddd07
