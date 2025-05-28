@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from "react";
 
+// Use VITE_ prefix for Vite environment variables!
 const SPECKLE_API = "https://app.speckle.systems/api/v1";
-const PROJECT_ID = process.env.REACT_APP_SPECKLE_PROJECT_ID;
-const MODEL_ID = process.env.REACT_APP_SPECKLE_MODEL_ID;
-const TOKEN = process.env.REACT_APP_SPECKLE_TOKEN;
+const STREAM_ID = import.meta.env.VITE_SPECKLE_STREAM_ID;
+const TOKEN = import.meta.env.VITE_SPECKLE_TOKEN;
 
 const METRICS = [
   "EUI", "Circulation", "ClearancesMet", "EquipmentCount",
@@ -19,25 +18,21 @@ function recursiveExtract(obj, keys, result = {}, worksets = new Set(), zones = 
   let worksetName = null;
   let zoneName = null;
   if (obj.parameters) {
-    if (obj.parameters.Workset && obj.parameters.Workset.value) {
+    if (obj.parameters.Workset?.value) {
       worksetName = obj.parameters.Workset.value;
       worksets.add(worksetName);
     }
-    if (obj.parameters.ScopeBox && obj.parameters.ScopeBox.value) {
+    if (obj.parameters.ScopeBox?.value) {
       zoneName = obj.parameters.ScopeBox.value;
       zones.add(zoneName);
     }
-    // Also check if this is a 3D view with a view name
-    if (obj.parameters.ViewName && obj.parameters.ViewName.value) {
+    if (obj.parameters.ViewName?.value) {
       zones.add(obj.parameters.ViewName.value);
     }
   }
-  // Some objects use direct property keys
   if (obj.workset) { worksets.add(obj.workset); worksetName = obj.workset; }
   if (obj.scopeBoxName) { zones.add(obj.scopeBoxName); zoneName = obj.scopeBoxName; }
   if (obj.view) { zones.add(obj.view); zoneName = obj.view; }
-  
-  // Attach workset/zone as props for later filtering
   obj._workset = worksetName;
   obj._zone = zoneName;
 
@@ -138,36 +133,31 @@ export default function useSpeckleData({ mode, zone }) {
 
   useEffect(() => {
     let cancelled = false;
-    let lastObject = null; // to allow re-filtering on mode/zone switch without refetch
-    let lastModelMeta = null;
 
     async function fetchAll() {
       try {
-        // Get model info (for project name, updatedAt)
-        const modelRes = await fetch(
-          `${SPECKLE_API}/projects/${PROJECT_ID}/models/${MODEL_ID}`,
-          { headers: { Authorization: `Bearer ${TOKEN}` } }
+        // Step 1: Get the list of commits for the stream (get latest commit)
+        const commitsRes = await fetch(
+          `${SPECKLE_API}/streams/${STREAM_ID}/commits`,
+          { headers: TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {} }
         );
-        if (!modelRes.ok) throw new Error("Failed to fetch model");
-        const model = await modelRes.json();
-        lastModelMeta = model;
+        if (!commitsRes.ok) throw new Error("Failed to fetch commits");
+        const commits = await commitsRes.json();
+        const latestCommit = commits.items?.[0];
+        if (!latestCommit) throw new Error("No commits found for stream");
+        const commitId = latestCommit.id;
+        const projectName = latestCommit.stream?.name || "Speckle Project";
+        const updatedAt = latestCommit.createdAt;
 
-        const projectName = model.model.name;
-        const updatedAt = model.model.versions?.[0]?.createdAt || "";
-        const latestVersionId = model.model.versions?.[0]?.id;
-        if (!latestVersionId) throw new Error("No versions found for model");
-
-        // Get root object for latest version
+        // Step 2: Get root object for latest commit
         const objRes = await fetch(
-          `${SPECKLE_API}/projects/${PROJECT_ID}/models/${MODEL_ID}/versions/${latestVersionId}/object`,
-          { headers: { Authorization: `Bearer ${TOKEN}` } }
+          `${SPECKLE_API}/streams/${STREAM_ID}/commits/${commitId}/object`,
+          { headers: TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {} }
         );
-        if (!objRes.ok) throw new Error("Failed to fetch object");
+        if (!objRes.ok) throw new Error("Failed to fetch commit object");
         const { object } = await objRes.json();
 
-        lastObject = object;
-
-        // Extract all available modes/zones from this object tree
+        // Step 3: Extract all available modes/zones and metrics
         const allWorksets = new Set();
         const allZones = new Set();
         const initialMetrics = {};
@@ -177,7 +167,7 @@ export default function useSpeckleData({ mode, zone }) {
         const availableModes = ["All", ...Array.from(allWorksets).filter(Boolean)];
         const availableZones = ["All", ...Array.from(allZones).filter(Boolean)];
 
-        // Filter values based on current mode/zone
+        // Step 4: Filter values based on current mode/zone
         const metrics = sumFiltered(object, METRICS, {}, { mode, zone });
 
         if (!cancelled)
@@ -201,8 +191,8 @@ export default function useSpeckleData({ mode, zone }) {
           }));
       }
     }
+
     fetchAll();
-    // Mode/zone changes just trigger re-fetch for now (if you want true local re-filtering, refactor for useMemo/useRef)
     return () => { cancelled = true; };
   }, [mode, zone]);
 
