@@ -598,3 +598,7 @@ Code Repository
 You can find the entire code for this guide in this repository.(opens new window)
 
 If you find any issues with this guide, or the apps code, feel free to report them on our Community Forum (opens new window)or directly on the app's GitHub repo. Wherever it feels more appropriate.
+
+
+
+localhost/:1 Access to fetch at 'https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467' from origin 'http://localhost:5177' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.

@@ -4,9 +4,9 @@ import { useEffect } from "react";
 
 // Use your .env setup for token/project/model IDs
 const PROJECT_ID =
-  import.meta.env.VITE_SPECKLE_STREAM_ID || process.env.REACT_APP_SPECKLE_PROJECT_ID;
+  import.meta.env.VITE_SPECKLE_PROJECT_ID;
 const MODEL_ID =
-  import.meta.env.VITE_SPECKLE_COMMIT_ID || process.env.REACT_APP_SPECKLE_MODEL_ID;
+  import.meta.env.VITE_SPECKLE_MODEL_ID;
 const TOKEN =
   import.meta.env.REACT_APP_SPECKLE_TOKEN;
 
