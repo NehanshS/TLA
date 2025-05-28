@@ -91,9 +91,15 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
 
     async function fetchData() {
       try {
+<<<<<<< HEAD
         // 1. Get latest commit for the stream
         const commitsRes = await fetch(
           `${SPECKLE_API}/streams/${STREAM_ID}/commits`,
+=======
+        // Fetch model for project name, date, etc
+        const modelRes = await fetch(
+          `${SPECKLE_API}/streams/${PROJECT_ID}/commits/${MODEL_ID}`,
+>>>>>>> 2ba243700a5b8af95f58cd387d2fd62592c11a73
           { headers: { Authorization: `Bearer ${TOKEN}` } }
         );
         if (!commitsRes.ok) throw new Error("Failed to fetch commits");
@@ -106,7 +112,11 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
 
         // 2. Get root object for this commit
         const objRes = await fetch(
+<<<<<<< HEAD
           `${SPECKLE_API}/streams/${STREAM_ID}/commits/${commitId}/object`,
+=======
+          `${SPECKLE_API}/streams/${PROJECT_ID}/commits/${MODEL_ID}/versions/${latestVersionId}/object`,
+>>>>>>> 2ba243700a5b8af95f58cd387d2fd62592c11a73
           { headers: { Authorization: `Bearer ${TOKEN}` } }
         );
         if (!objRes.ok) throw new Error("Failed to fetch commit object");
