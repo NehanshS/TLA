@@ -2,15 +2,15 @@ import { useState } from "react";
 import HeaderRow from "./components/HeaderRow";
 import ViewportGrid from "./components/ViewportGrid";
 import ViewportOverlay from "./components/ViewportOverlay";
-// import SpeckleViewer from "./components/SpeckleViewer"; // Not used if embedding iframe directly
+// import SpeckleViewer from "./components/SpeckleViewer"; // Use iframe embed below if preferred
 import FloatingSwitchers from "./components/FloatingSwitchers";
 import CostPanel from "./components/CostPanel";
 import VerticalMetrics from "./components/VerticalMetrics";
 import useSpeckleData from "./useSpeckleData";
 
-
-// (Optional) Get the Speckle embed URL from .env if needed
-const embedUrl = import.meta.env.VITE_SPECKLE_EMBED_URL || "";
+// Embed URL from .env, fallback to default for your current model
+const embedUrl = import.meta.env.VITE_SPECKLE_EMBED_URL ||
+  "https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D";
 
 export default function App() {
   // State for dynamic Mode and Zone
@@ -47,7 +47,7 @@ export default function App() {
     equipmentCost: data.equipmentCost,
   };
 
-  // Example for facility score, last sync, etc.
+  // Facility score, last sync, costs
   const facilityScore = data.layoutScore ?? 97;
   const lastSynced = data.updatedAt
     ? new Date(data.updatedAt).toLocaleString()
@@ -81,7 +81,7 @@ export default function App() {
       ]
     );
 
-  // If you want to allow editing the project name:
+  // If you want to allow editing the project name (stub for now)
   const setProjectName = () => {};
 
   return (
@@ -93,7 +93,22 @@ export default function App() {
       {/* 3D viewer embed */}
       <div>
         <center>
-          <iframe title="Speckle" src="https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D" width="2048" height="1080" frameborder="0"></iframe>
+          <iframe
+            title="Speckle"
+            src={embedUrl}
+            width="2048"
+            height="1080"
+            frameBorder="0"
+            style={{
+              maxWidth: "100vw",
+              maxHeight: "80vh",
+              minWidth: "600px",
+              minHeight: "400px",
+              borderRadius: "14px",
+              margin: "auto",
+              boxShadow: "0 0 18px #0006"
+            }}
+          />
         </center>
       </div>
       <ViewportOverlay />
@@ -102,8 +117,7 @@ export default function App() {
         facilityScore={facilityScore}
         lastSynced={lastSynced}
         setProjectName={setProjectName}
-        metrics={metrics} // <-- for CSV export
-        // commitCount={data.commitCount || 12} // Not used in this HeaderRow version, remove if not needed
+        metrics={metrics}
       />
       <FloatingSwitchers
         mode={mode}
