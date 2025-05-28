@@ -103,7 +103,7 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
       try {
         // Fetch model for project name, date, etc
         const modelRes = await fetch(
-          `${SPECKLE_API}/projects/${PROJECT_ID}/models/${MODEL_ID}`,
+          `${SPECKLE_API}/streams/${PROJECT_ID}/commits/${MODEL_ID}`,
           { headers: { Authorization: `Bearer ${TOKEN}` } }
         );
         if (!modelRes.ok) throw new Error("Failed to fetch model");
@@ -115,7 +115,7 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
 
         // Fetch root object for model data
         const objRes = await fetch(
-          `${SPECKLE_API}/projects/${PROJECT_ID}/models/${MODEL_ID}/versions/${latestVersionId}/object`,
+          `${SPECKLE_API}/streams/${PROJECT_ID}/commits/${MODEL_ID}/versions/${latestVersionId}/object`,
           { headers: { Authorization: `Bearer ${TOKEN}` } }
         );
         if (!objRes.ok) throw new Error("Failed to fetch object");
