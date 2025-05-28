@@ -614,3 +614,22 @@ cp packages/server/.env.test-example packages/server/.env.test
 cp packages/frontend-2/.env.example packages/frontend-2/.env
 cp packages/dui3/.env.example packages/dui3/.env
 yarn dev
+
+useSpeckleData.js:105 
+ GET https://app.speckle.systems/api/v1/projects/4fbfe07d27/models/0fb53e3467 403 (Forbidden)
+fetchData	@	useSpeckleData.js:105
+(anonymous)	@	useSpeckleData.js:160
+commitHookEffectListMount	@	chunk-SVG7M4VJ.js?v=b1a27833:16961
+commitPassiveMountOnFiber	@	chunk-SVG7M4VJ.js?v=b1a27833:18204
+commitPassiveMountEffects_complete	@	chunk-SVG7M4VJ.js?v=b1a27833:18177
+commitPassiveMountEffects_begin	@	chunk-SVG7M4VJ.js?v=b1a27833:18167
+commitPassiveMountEffects	@	chunk-SVG7M4VJ.js?v=b1a27833:18157
+flushPassiveEffectsImpl	@	chunk-SVG7M4VJ.js?v=b1a27833:19541
+flushPassiveEffects	@	chunk-SVG7M4VJ.js?v=b1a27833:19498
+(anonymous)	@	chunk-SVG7M4VJ.js?v=b1a27833:19379
+workLoop	@	chunk-SVG7M4VJ.js?v=b1a27833:195
+flushWork	@	chunk-SVG7M4VJ.js?v=b1a27833:174
+performWorkUntilDeadline	@	chunk-SVG7M4VJ.js?v=b1a27833:382
+
+![alt text](image.png)
+
