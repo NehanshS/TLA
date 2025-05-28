@@ -2,24 +2,25 @@ import { useState } from "react";
 import HeaderRow from "./components/HeaderRow";
 import ViewportGrid from "./components/ViewportGrid";
 import ViewportOverlay from "./components/ViewportOverlay";
-// import SpeckleViewer from "./components/SpeckleViewer"; // Use iframe embed below if preferred
+// import SpeckleViewer from "./components/SpeckleViewer"; // Not used if embedding iframe directly
 import FloatingSwitchers from "./components/FloatingSwitchers";
 import CostPanel from "./components/CostPanel";
 import VerticalMetrics from "./components/VerticalMetrics";
 import useSpeckleData from "./useSpeckleData";
+// Optionally: import ExportCSV from "./components/ExportCSV";
 
-// Embed URL from .env, fallback to default for your current model
-const embedUrl = import.meta.env.VITE_SPECKLE_EMBED_URL ||
-  "https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D";
+// (Optional) Get the Speckle embed URL from .env if needed
+const embedUrl = import.meta.env.VITE_SPECKLE_EMBED_URL || "";
 
 export default function App() {
   // State for dynamic Mode and Zone
   const [mode, setMode] = useState("All");
   const [zone, setZone] = useState("All");
 
-  // Main data hook: provides all live values and the switcher options
+  // GraphQL-based data hook
   const data = useSpeckleData({ mode, zone });
 
+  // Loading/Error UI
   if (data.loading)
     return (
       <div className="relative bg-black text-white w-screen h-screen flex items-center justify-center">
@@ -35,7 +36,7 @@ export default function App() {
       </div>
     );
 
-  // Unified metrics object (for CSV export and VerticalMetrics)
+  // Metrics (unified for export, charts, etc)
   const metrics = {
     clearance: data.clearance,
     equipment: data.equipment,
@@ -47,7 +48,7 @@ export default function App() {
     equipmentCost: data.equipmentCost,
   };
 
-  // Facility score, last sync, costs
+  // Other data for panels
   const facilityScore = data.layoutScore ?? 97;
   const lastSynced = data.updatedAt
     ? new Date(data.updatedAt).toLocaleString()
@@ -60,7 +61,7 @@ export default function App() {
       (Number(data.materialCost) || 0)
   };
 
-  // Switcher navigation helpers
+  // Switcher helpers
   const modeIndex = data.availableModes.indexOf(mode);
   const zoneIndex = data.availableZones.indexOf(zone);
   const nextMode = () =>
@@ -81,7 +82,7 @@ export default function App() {
       ]
     );
 
-  // If you want to allow editing the project name (stub for now)
+  // (Optional) If you want to allow editing the project name:
   const setProjectName = () => {};
 
   return (
@@ -90,25 +91,16 @@ export default function App() {
       style={{ fontFamily: "'Roboto', 'system-ui', sans-serif" }}
     >
       <ViewportGrid />
-      {/* 3D viewer embed */}
+      {/* 3D viewer embed (iframe) */}
       <div>
         <center>
           <iframe
             title="Speckle"
-            src={embedUrl}
+            src="https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D"
             width="2048"
             height="1080"
             frameBorder="0"
-            style={{
-              maxWidth: "100vw",
-              maxHeight: "80vh",
-              minWidth: "600px",
-              minHeight: "400px",
-              borderRadius: "14px",
-              margin: "auto",
-              boxShadow: "0 0 18px #0006"
-            }}
-          />
+          ></iframe>
         </center>
       </div>
       <ViewportOverlay />
@@ -117,7 +109,7 @@ export default function App() {
         facilityScore={facilityScore}
         lastSynced={lastSynced}
         setProjectName={setProjectName}
-        metrics={metrics}
+        metrics={metrics} // for CSV export if needed
       />
       <FloatingSwitchers
         mode={mode}
@@ -133,6 +125,8 @@ export default function App() {
       />
       <CostPanel {...cost} />
       <VerticalMetrics metrics={metrics} />
+      {/* Optionally, add ExportCSV here if you want export on every page */}
+      {/* <ExportCSV metrics={metrics} projectName={data.projectName} /> */}
     </div>
   );
 }

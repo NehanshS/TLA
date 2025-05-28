@@ -2,16 +2,18 @@
 import { useCSVExport } from "../useCSVExport";
 import { useEffect } from "react";
 
-// Use your .env setup for token/stream IDs
+// Use your .env setup for token/stream IDs (project ID is now Stream/Project)
 const STREAM_ID = import.meta.env.VITE_SPECKLE_STREAM_ID;
+const VERSION_ID = import.meta.env.VITE_SPECKLE_VERSION_ID; // optional
 const TOKEN = import.meta.env.VITE_SPECKLE_TOKEN;
 
-export default function ExportCSV({ metrics, projectName }) {
+export default function ExportCSV({ metrics, projectName, versionId }) {
   const { exportCSV, exporting, toast } = useCSVExport({
     streamId: STREAM_ID,
+    versionId: versionId || VERSION_ID, // can override per export
     token: TOKEN,
     metrics,
-    projectName
+    projectName,
   });
 
   // Optional: ESC to close toast (add toast clear logic if desired)

@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 // Helper: convert array of objects to CSV string (Excel-safe, JSON parse-safe)
-function toCSV(rows, options = {}) {
+function toCSV(rows) {
   const keys = Object.keys(rows[0] || {});
   const csvRows = [
     keys.join(","), // header
@@ -11,14 +11,15 @@ function toCSV(rows, options = {}) {
         .map(k =>
           typeof row[k] === "number"
             ? row[k].toFixed(2)
-            : `"${String(row[k] ?? "").replace(/"/g, '""')}"`)
+            : `"${String(row[k] ?? "").replace(/"/g, '""')}"`
+        )
         .join(",")
     )
   ];
   return csvRows.join("\r\n");
 }
 
-export function useCSVExport({ streamId, token, metrics, projectName }) {
+export function useCSVExport({ streamId, versionId, token, metrics, projectName }) {
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState("");
 
@@ -27,20 +28,47 @@ export function useCSVExport({ streamId, token, metrics, projectName }) {
     setToast("");
 
     try {
-      // 1. Fetch latest commit for this stream (to get commitId/timestamp)
-      const commitsRes = await fetch(
-        `https://app.speckle.systems/api/v1/streams/${streamId}/commits`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const commits = await commitsRes.json();
-      const commit = commits.items?.[0] || {};
-      const commitId = commit.id?.slice?.(0, 8) || "latest";
-      const commitTime = commit.createdAt || new Date().toISOString();
+      // 1. Fetch latest version/commit info via GraphQL
+      // If versionId is provided, use it, else query for the latest
+      let actualVersionId = versionId;
+      let commitTime = new Date().toISOString();
+      let streamName = projectName || "SpeckleProject";
+
+      if (!actualVersionId) {
+        const query = `
+          query GetVersions($projectId: String!) {
+            project(id: $projectId) {
+              versions(limit: 1) {
+                items {
+                  id
+                  createdAt
+                  author { name }
+                }
+              }
+              name
+            }
+          }
+        `;
+        const variables = { projectId: streamId };
+        const gqlRes = await fetch("https://app.speckle.systems/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ query, variables })
+        });
+        const gqlData = await gqlRes.json();
+        const version = gqlData?.data?.project?.versions?.items?.[0] || {};
+        actualVersionId = version.id?.slice?.(0, 8) || "latest";
+        commitTime = version.createdAt || commitTime;
+        streamName = gqlData?.data?.project?.name || streamName;
+      }
 
       // 2. Prepare the row (current dashboard metrics)
       const csvRow = {
-        projectName: projectName || commit.stream?.name || "",
-        commitId,
+        projectName: streamName,
+        versionId: actualVersionId,
         commitTime: new Date(commitTime).toISOString(),
         ...Object.fromEntries(
           Object.entries(metrics).map(([k, v]) => [
@@ -53,7 +81,7 @@ export function useCSVExport({ streamId, token, metrics, projectName }) {
       // 3. Download CSV (single row)
       const csv = toCSV([csvRow]);
       const safeProj = (csvRow.projectName || "SpeckleProject").replace(/[^\w\d-]/g, "_");
-      const filename = `${safeProj}_${commitId}_${csvRow.commitTime.replace(/[:.]/g, "-")}.csv`;
+      const filename = `${safeProj}_${actualVersionId}_${csvRow.commitTime.replace(/[:.]/g, "-")}.csv`;
       const blob = new Blob([csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
 
