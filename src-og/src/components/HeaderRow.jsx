@@ -1,8 +1,11 @@
+import ExportCSV from "./ExportCSV";
+
 export default function HeaderRow({
   projectName,
   facilityScore,
   lastSynced,
   setProjectName, // can be a no-op if read-only
+  metrics // <--- required for ExportCSV
 }) {
   return (
     <div className="header-row">
@@ -34,6 +37,10 @@ export default function HeaderRow({
       <div className="header-metrics">
         <div className="last-synced acumin-thin">
           Last Synced: {lastSynced || "--"}
+        </div>
+        <div style={{ marginTop: 8 }}>
+          {/* ExportCSV button with metrics and projectName */}
+          <ExportCSV metrics={metrics} projectName={projectName} />
         </div>
       </div>
     </div>
