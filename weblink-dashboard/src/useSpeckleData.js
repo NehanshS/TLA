@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 
-const SPECKLE_API = "https://app.speckle.systems/api/v1";
-const STREAM_ID = import.meta.env.VITE_SPECKLE_STREAM_ID;
+const GRAPHQL = "https://app.speckle.systems/graphql";
+const PROJECT_ID = import.meta.env.VITE_SPECKLE_STREAM_ID;
 const TOKEN = import.meta.env.VITE_SPECKLE_TOKEN;
 
+// Possible keys for each metric
 const SPECKLE_KEYS = {
   clearance: ["ClearancesMet", "clearance", "Clearance"],
   equipment: ["EquipmentCount", "equipment", "Equipment"],
@@ -13,7 +14,6 @@ const SPECKLE_KEYS = {
   estimatedWorkers: ["EstimatedWorkers", "estimatedWorkers", "Workers", "workers"],
   materialCost: ["MaterialCost", "materialCost"],
   equipmentCost: ["EquipmentCost", "equipmentCost"],
-  // Add others if your naming changes
 };
 
 function getMetric(obj, keys) {
@@ -68,6 +68,21 @@ function scanObjectTree(obj, filters = { mode: "All", zone: "All" }, scanOptions
   return scanOptions;
 }
 
+// Simple GraphQL fetch helper
+async function gqlRequest({ query, variables = {}, token }) {
+  const res = await fetch(GRAPHQL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
+    body: JSON.stringify({ query, variables })
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors.map(e => e.message).join("\n"));
+  return json.data;
+}
+
 export default function useSpeckleData({ mode = "All", zone = "All" }) {
   const [data, setData] = useState({
     loading: true,
@@ -91,30 +106,53 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
 
     async function fetchData() {
       try {
-        // 1. Get latest commit for the stream
-        const commitsRes = await fetch(
-          `${SPECKLE_API}/streams/${STREAM_ID}/commits`,
-          { headers: { Authorization: `Bearer ${TOKEN}` } }
-        );
-        if (!commitsRes.ok) throw new Error("Failed to fetch commits");
-        const commits = await commitsRes.json();
-        const latestCommit = commits.items?.[0];
-        if (!latestCommit) throw new Error("No commits found for stream");
-        const commitId = latestCommit.id;
-        const projectName = latestCommit.stream?.name || "Speckle Project";
-        const updatedAt = latestCommit.createdAt;
+        // 1. Get latest version (commit) for project/stream
+        const versionData = await gqlRequest({
+          query: `
+            query ($projectId: String!) {
+              project(id: $projectId) {
+                name
+                versions(limit: 1) {
+                  items {
+                    id
+                    referencedObject
+                    createdAt
+                  }
+                }
+              }
+            }
+          `,
+          variables: { projectId: PROJECT_ID },
+          token: TOKEN
+        });
+        const project = versionData.project;
+        const latestVersion = project.versions.items[0];
+        if (!latestVersion) throw new Error("No versions found for this project.");
+        const referencedObjectId = latestVersion.referencedObject;
 
-        // 2. Get root object for this commit
-        const objRes = await fetch(
-          `${SPECKLE_API}/streams/${STREAM_ID}/commits/${commitId}/object`,
-          { headers: { Authorization: `Bearer ${TOKEN}` } }
-        );
-        if (!objRes.ok) throw new Error("Failed to fetch commit object");
-        const { object } = await objRes.json();
+        // 2. Get root object (deep, recursive - this could be optimized by only getting fields you need)
+        const objectData = await gqlRequest({
+          query: `
+            query ($projectId: String!, $objectId: String!) {
+              project(id: $projectId) {
+                object(id: $objectId) {
+                  id
+                  parameters
+                  elements { id parameters }
+                  children { id parameters }
+                  // Add more nesting if your tree is deeper
+                }
+              }
+            }
+          `,
+          variables: { projectId: PROJECT_ID, objectId: referencedObjectId },
+          token: TOKEN
+        });
 
-        // 3. Scan and sum metrics, collect worksets/zones
+        // 3. Parse and aggregate metrics
+        const rootObj = objectData.project.object;
         const scan = scanObjectTree(
-          object,
+          rootObj,
           { mode, zone },
           { metrics: {}, worksets: new Set(), zones: new Set() }
         );
@@ -125,8 +163,8 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
           setData({
             loading: false,
             error: null,
-            projectName,
-            updatedAt,
+            projectName: project.name || "Speckle Project",
+            updatedAt: latestVersion.createdAt,
             availableModes,
             availableZones,
             clearance: scan.metrics.clearance || null,
@@ -148,7 +186,8 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
           }));
       }
     }
-    fetchData();
+    fetchData(); 
+    console.log(data)
     return () => { cancelled = true; };
   }, [mode, zone]);
 
