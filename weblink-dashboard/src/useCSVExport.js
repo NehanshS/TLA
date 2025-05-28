@@ -1,4 +1,3 @@
-// useCSVExport.js
 import { useState } from "react";
 
 // Helper: convert array of objects to CSV string (Excel-safe, JSON parse-safe)
@@ -28,8 +27,7 @@ export function useCSVExport({ streamId, versionId, token, metrics, projectName 
     setToast("");
 
     try {
-      // 1. Fetch latest version/commit info via GraphQL
-      // If versionId is provided, use it, else query for the latest
+      // 1. Fetch latest version/commit info via GraphQL if versionId isn't provided
       let actualVersionId = versionId;
       let commitTime = new Date().toISOString();
       let streamName = projectName || "SpeckleProject";

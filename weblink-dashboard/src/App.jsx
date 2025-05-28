@@ -2,14 +2,12 @@ import { useState } from "react";
 import HeaderRow from "./components/HeaderRow";
 import ViewportGrid from "./components/ViewportGrid";
 import ViewportOverlay from "./components/ViewportOverlay";
-// import SpeckleViewer from "./components/SpeckleViewer"; // Not used if embedding iframe directly
 import FloatingSwitchers from "./components/FloatingSwitchers";
 import CostPanel from "./components/CostPanel";
 import VerticalMetrics from "./components/VerticalMetrics";
 import useSpeckleData from "./useSpeckleData";
 // Optionally: import ExportCSV from "./components/ExportCSV";
 
-// (Optional) Get the Speckle embed URL from .env if needed
 const embedUrl = import.meta.env.VITE_SPECKLE_EMBED_URL || "";
 
 export default function App() {
@@ -96,7 +94,10 @@ export default function App() {
         <center>
           <iframe
             title="Speckle"
-            src="https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D"
+            src={
+              embedUrl ||
+              "https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D"
+            }
             width="2048"
             height="1080"
             frameBorder="0"
