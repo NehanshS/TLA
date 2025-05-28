@@ -8,6 +8,7 @@ import CostPanel from "./components/CostPanel";
 import VerticalMetrics from "./components/VerticalMetrics";
 import useSpeckleData from "./useSpeckleData";
 
+
 // (Optional) Get the Speckle embed URL from .env if needed
 const embedUrl = import.meta.env.VITE_SPECKLE_EMBED_URL || "";
 
