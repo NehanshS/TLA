@@ -93,18 +93,7 @@ export default function App() {
       {/* 3D viewer embed */}
       <div>
         <center>
-          <iframe
-            className="relative mx-auto"
-            title="Speckle"
-            src={
-              embedUrl ||
-              "https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%2C%22manualLoad%22%3Atrue%7D"
-            }
-            width="2048"
-            height="1080"
-            frameBorder="0"
-            style={{ borderRadius: "12px" }}
-          ></iframe>
+          <iframe title="Speckle" src="https://app.speckle.systems/projects/4fbfe07d27/models/0fb53e3467#embed=%7B%22isEnabled%22%3Atrue%2C%22isTransparent%22%3Atrue%2C%22hideControls%22%3Atrue%2C%22hideSelectionInfo%22%3Atrue%2C%22disableModelLink%22%3Atrue%2C%22noScroll%22%3Atrue%7D" width="2048" height="1080" frameborder="0"></iframe>
         </center>
       </div>
       <ViewportOverlay />
