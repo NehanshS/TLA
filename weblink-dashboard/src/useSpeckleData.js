@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 
+// ENDPOINT + ENV
 const GRAPHQL = "https://app.speckle.systems/graphql";
-const PROJECT_ID = import.meta.env.VITE_SPECKLE_STREAM_ID;
+const PROJECT_ID = import.meta.env.VITE_SPECKLE_STREAM_ID; // This is your "project"/stream ID
 const TOKEN = import.meta.env.VITE_SPECKLE_TOKEN;
 
-// Possible keys for each metric
+// Define possible keys per metric
 const SPECKLE_KEYS = {
   clearance: ["ClearancesMet", "clearance", "Clearance"],
   equipment: ["EquipmentCount", "equipment", "Equipment"],
@@ -16,6 +17,7 @@ const SPECKLE_KEYS = {
   equipmentCost: ["EquipmentCost", "equipmentCost"],
 };
 
+// Helper: extract first matching value
 function getMetric(obj, keys) {
   for (const key of keys) {
     if (obj.parameters && obj.parameters[key]) {
@@ -27,9 +29,9 @@ function getMetric(obj, keys) {
   return 0;
 }
 
+// Recursively extract metrics, worksets, zones
 function scanObjectTree(obj, filters = { mode: "All", zone: "All" }, scanOptions = {}) {
   if (!obj) return scanOptions;
-
   let worksetName = null;
   let zoneName = null;
   if (obj.parameters) {
@@ -49,12 +51,11 @@ function scanObjectTree(obj, filters = { mode: "All", zone: "All" }, scanOptions
   if (obj.scopeBoxName) { scanOptions.zones.add(obj.scopeBoxName); zoneName = obj.scopeBoxName; }
   if (obj.view) { scanOptions.zones.add(obj.view); zoneName = obj.view; }
 
+  // Filter for dashboard
   const matchesMode =
-    filters.mode === "All" ||
-    worksetName === filters.mode;
+    filters.mode === "All" || worksetName === filters.mode;
   const matchesZone =
-    filters.zone === "All" ||
-    zoneName === filters.zone;
+    filters.zone === "All" || zoneName === filters.zone;
 
   if (matchesMode && matchesZone) {
     for (const [field, keys] of Object.entries(SPECKLE_KEYS)) {
@@ -64,11 +65,10 @@ function scanObjectTree(obj, filters = { mode: "All", zone: "All" }, scanOptions
 
   if (Array.isArray(obj.elements)) obj.elements.forEach(child => scanObjectTree(child, filters, scanOptions));
   if (Array.isArray(obj.children)) obj.children.forEach(child => scanObjectTree(child, filters, scanOptions));
-
   return scanOptions;
 }
 
-// Simple GraphQL fetch helper
+// GraphQL fetch helper (handles errors)
 async function gqlRequest({ query, variables = {}, token }) {
   const res = await fetch(GRAPHQL, {
     method: "POST",
@@ -106,22 +106,23 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
 
     async function fetchData() {
       try {
-        // 1. Get latest version (commit) for project/stream
-        const versionData = await gqlRequest({
-          query: `
-            query ($projectId: String!) {
-              project(id: $projectId) {
-                name
-                versions(limit: 1) {
-                  items {
-                    id
-                    referencedObject
-                    createdAt
-                  }
+        // 1. Get latest version (commit) for project
+        const versionQuery = `
+          query ($projectId: String!) {
+            project(id: $projectId) {
+              name
+              versions(limit: 1) {
+                items {
+                  id
+                  referencedObject
+                  createdAt
                 }
               }
             }
-          `,
+          }
+        `;
+        const versionData = await gqlRequest({
+          query: versionQuery,
           variables: { projectId: PROJECT_ID },
           token: TOKEN
         });
@@ -130,26 +131,26 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
         if (!latestVersion) throw new Error("No versions found for this project.");
         const referencedObjectId = latestVersion.referencedObject;
 
-        // 2. Get root object (deep, recursive - this could be optimized by only getting fields you need)
-        const objectData = await gqlRequest({
-          query: `
-            query ($projectId: String!, $objectId: String!) {
-              project(id: $projectId) {
-                object(id: $objectId) {
-                  id
-                  parameters
-                  elements { id parameters }
-                  children { id parameters }
-                  // Add more nesting if your tree is deeper
-                }
+        // 2. Get root object (deeply)
+        const objectQuery = `
+          query ($projectId: String!, $objectId: String!) {
+            project(id: $projectId) {
+              object(id: $objectId) {
+                id
+                parameters
+                elements { id parameters elements { id parameters } children { id parameters } }
+                children { id parameters elements { id parameters } children { id parameters } }
               }
             }
-          `,
+          }
+        `;
+        const objectData = await gqlRequest({
+          query: objectQuery,
           variables: { projectId: PROJECT_ID, objectId: referencedObjectId },
           token: TOKEN
         });
 
-        // 3. Parse and aggregate metrics
+        // 3. Parse and aggregate
         const rootObj = objectData.project.object;
         const scan = scanObjectTree(
           rootObj,
@@ -179,15 +180,15 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
         }
       } catch (error) {
         if (!cancelled)
-          setData((prev) => ({
+          setData(prev => ({
             ...prev,
             loading: false,
             error: error.message || "Failed to load data"
           }));
       }
     }
-    fetchData(); 
-    console.log(data)
+
+    fetchData();
     return () => { cancelled = true; };
   }, [mode, zone]);
 
