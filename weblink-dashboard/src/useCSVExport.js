@@ -11,15 +11,14 @@ function toCSV(rows, options = {}) {
         .map(k =>
           typeof row[k] === "number"
             ? row[k].toFixed(2)
-            : `"${String(row[k] ?? "").replace(/"/g, '""')}"`
-        )
+            : `"${String(row[k] ?? "").replace(/"/g, '""')}"`)
         .join(",")
     )
   ];
   return csvRows.join("\r\n");
 }
 
-export function useCSVExport({ projectId, modelId, token, metrics, projectName }) {
+export function useCSVExport({ streamId, token, metrics, projectName }) {
   const [exporting, setExporting] = useState(false);
   const [toast, setToast] = useState("");
 
@@ -28,18 +27,19 @@ export function useCSVExport({ projectId, modelId, token, metrics, projectName }
     setToast("");
 
     try {
-      // 1. Fetch model info to get commit/timestamp
-      const modelRes = await fetch(
-        `https://app.speckle.systems/api/v1/projects/${projectId}/models/${modelId}`,
+      // 1. Fetch latest commit for this stream (to get commitId/timestamp)
+      const commitsRes = await fetch(
+        `https://app.speckle.systems/api/v1/streams/${streamId}/commits`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const model = await modelRes.json();
-      const commitId = model.model.versions?.[0]?.id?.slice?.(0, 8) || "latest";
-      const commitTime = model.model.versions?.[0]?.createdAt || new Date().toISOString();
+      const commits = await commitsRes.json();
+      const commit = commits.items?.[0] || {};
+      const commitId = commit.id?.slice?.(0, 8) || "latest";
+      const commitTime = commit.createdAt || new Date().toISOString();
 
       // 2. Prepare the row (current dashboard metrics)
       const csvRow = {
-        projectName: projectName || model.model.name || "",
+        projectName: projectName || commit.stream?.name || "",
         commitId,
         commitTime: new Date(commitTime).toISOString(),
         ...Object.fromEntries(

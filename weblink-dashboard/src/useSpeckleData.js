@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 
 const SPECKLE_API = "https://app.speckle.systems/api/v1";
-const PROJECT_ID = import.meta.env.VITE_SPECKLE_PROJECT_ID;
-const MODEL_ID = import.meta.env.VITE_SPECKLE_MODEL_ID;
-const TOKEN = import.meta.env.REACT_APP_SPECKLE_TOKEN;
+const STREAM_ID = import.meta.env.VITE_SPECKLE_STREAM_ID;
+const TOKEN = import.meta.env.VITE_SPECKLE_TOKEN;
 
-// All possible keys in Speckle/Revit for your metrics:
 const SPECKLE_KEYS = {
   clearance: ["ClearancesMet", "clearance", "Clearance"],
   equipment: ["EquipmentCount", "equipment", "Equipment"],
@@ -19,24 +17,19 @@ const SPECKLE_KEYS = {
 };
 
 function getMetric(obj, keys) {
-  // Look for all possible naming conventions
   for (const key of keys) {
-    // Check in parameters
     if (obj.parameters && obj.parameters[key]) {
       let v = obj.parameters[key].value ?? obj.parameters[key];
       if (!isNaN(parseFloat(v))) return parseFloat(v);
     }
-    // Check as direct property
     if (!isNaN(parseFloat(obj[key]))) return parseFloat(obj[key]);
   }
   return 0;
 }
 
-// Recursively find all Worksets and Zones (ScopeBoxes/Views), and sum all metrics per filter
 function scanObjectTree(obj, filters = { mode: "All", zone: "All" }, scanOptions = {}) {
   if (!obj) return scanOptions;
 
-  // --- Collect workset and zone names ---
   let worksetName = null;
   let zoneName = null;
   if (obj.parameters) {
@@ -56,7 +49,6 @@ function scanObjectTree(obj, filters = { mode: "All", zone: "All" }, scanOptions
   if (obj.scopeBoxName) { scanOptions.zones.add(obj.scopeBoxName); zoneName = obj.scopeBoxName; }
   if (obj.view) { scanOptions.zones.add(obj.view); zoneName = obj.view; }
 
-  // Filtering for summing
   const matchesMode =
     filters.mode === "All" ||
     worksetName === filters.mode;
@@ -64,14 +56,12 @@ function scanObjectTree(obj, filters = { mode: "All", zone: "All" }, scanOptions
     filters.zone === "All" ||
     zoneName === filters.zone;
 
-  // --- Sum metrics for matching elements ---
   if (matchesMode && matchesZone) {
     for (const [field, keys] of Object.entries(SPECKLE_KEYS)) {
       scanOptions.metrics[field] = (scanOptions.metrics[field] ?? 0) + getMetric(obj, keys);
     }
   }
 
-  // Scan children recursively
   if (Array.isArray(obj.elements)) obj.elements.forEach(child => scanObjectTree(child, filters, scanOptions));
   if (Array.isArray(obj.children)) obj.children.forEach(child => scanObjectTree(child, filters, scanOptions));
 
@@ -101,27 +91,28 @@ export default function useSpeckleData({ mode = "All", zone = "All" }) {
 
     async function fetchData() {
       try {
-        // Fetch model for project name, date, etc
-        const modelRes = await fetch(
-          `${SPECKLE_API}/projects/${PROJECT_ID}/models/${MODEL_ID}`,
+        // 1. Get latest commit for the stream
+        const commitsRes = await fetch(
+          `${SPECKLE_API}/streams/${STREAM_ID}/commits`,
           { headers: { Authorization: `Bearer ${TOKEN}` } }
         );
-        if (!modelRes.ok) throw new Error("Failed to fetch model");
-        const model = await modelRes.json();
-        const projectName = model.model.name;
-        const updatedAt = model.model.versions?.[0]?.createdAt || "";
-        const latestVersionId = model.model.versions?.[0]?.id;
-        if (!latestVersionId) throw new Error("No versions found for model");
+        if (!commitsRes.ok) throw new Error("Failed to fetch commits");
+        const commits = await commitsRes.json();
+        const latestCommit = commits.items?.[0];
+        if (!latestCommit) throw new Error("No commits found for stream");
+        const commitId = latestCommit.id;
+        const projectName = latestCommit.stream?.name || "Speckle Project";
+        const updatedAt = latestCommit.createdAt;
 
-        // Fetch root object for model data
+        // 2. Get root object for this commit
         const objRes = await fetch(
-          `${SPECKLE_API}/projects/${PROJECT_ID}/models/${MODEL_ID}/versions/${latestVersionId}/object`,
+          `${SPECKLE_API}/streams/${STREAM_ID}/commits/${commitId}/object`,
           { headers: { Authorization: `Bearer ${TOKEN}` } }
         );
-        if (!objRes.ok) throw new Error("Failed to fetch object");
+        if (!objRes.ok) throw new Error("Failed to fetch commit object");
         const { object } = await objRes.json();
 
-        // Scan and sum metrics, collect worksets/zones
+        // 3. Scan and sum metrics, collect worksets/zones
         const scan = scanObjectTree(
           object,
           { mode, zone },

@@ -2,28 +2,23 @@
 import { useCSVExport } from "../useCSVExport";
 import { useEffect } from "react";
 
-// Use your .env setup for token/project/model IDs
-const PROJECT_ID =
-  import.meta.env.VITE_SPECKLE_PROJECT_ID;
-const MODEL_ID =
-  import.meta.env.VITE_SPECKLE_MODEL_ID;
-const TOKEN =
-  import.meta.env.REACT_APP_SPECKLE_TOKEN;
+// Use your .env setup for token/stream IDs
+const STREAM_ID = import.meta.env.VITE_SPECKLE_STREAM_ID;
+const TOKEN = import.meta.env.VITE_SPECKLE_TOKEN;
 
 export default function ExportCSV({ metrics, projectName }) {
   const { exportCSV, exporting, toast } = useCSVExport({
-    projectId: PROJECT_ID,
-    modelId: MODEL_ID,
+    streamId: STREAM_ID,
     token: TOKEN,
     metrics,
     projectName
   });
 
-  // Optional: ESC to close toast
+  // Optional: ESC to close toast (add toast clear logic if desired)
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "Escape") {
-        // Clear toast (could enhance useCSVExport to support this)
+        // Implement toast clear if your useCSVExport supports it
       }
     };
     window.addEventListener("keydown", handler);
