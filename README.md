@@ -19,4 +19,6 @@ app.speckle.systems/graphql:1
            Error: Cannot query field "parameters" on type "Object". Cannot query field "elements" on type "Object". Cannot query field "id" on type "ObjectCollection". Cannot query field "parameters" on type "ObjectCollection". Cannot query field "elements" on type "ObjectCollection". Cannot query field "children" on type "ObjectCollection".
 
 
+
+
            
